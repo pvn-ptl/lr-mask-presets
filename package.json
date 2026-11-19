@@ -1,6 +1,6 @@
 {
   "name": "partly",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Partly: a preset to mask converter for Lightroom. Converts Lightroom presets into presets that apply the look inside an AI mask (background, subject, sky, people, landscape).",
   "private": true,
   "type": "module",
@@ -8,7 +8,7 @@
     "node": ">=20"
   },
   "bin": {
-    "lrmask": "cli/lrmask.mjs"
+    "partly": "cli/partly.mjs"
   },
   "scripts": {
     "test": "node --test \"test/*.test.mjs\"",

@@ -15,7 +15,7 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 hdiutil verify -quiet "$DMG" || fail "the image's checksum doesn't verify"
 [[ "$(hdiutil imageinfo "$DMG" | sed -n 's/^Format: //p')" == "UDZO" ]] || fail "not a compressed read-only image"
 
-MNT=$(mktemp -d "${TMPDIR:-/tmp}/lrmask-verify.XXXXXX")
+MNT=$(mktemp -d "${TMPDIR:-/tmp}/partly-verify.XXXXXX")
 cleanup() { hdiutil detach -quiet "$MNT" 2>/dev/null || hdiutil detach -quiet -force "$MNT" 2>/dev/null || true; rmdir "$MNT" 2>/dev/null || true; }
 trap cleanup EXIT
 hdiutil attach -quiet -readonly -nobrowse -noautoopen -mountpoint "$MNT" "$DMG"

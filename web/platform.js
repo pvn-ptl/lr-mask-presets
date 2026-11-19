@@ -31,7 +31,8 @@ function nativePlatform(handler) {
   };
 }
 
-const SETTINGS_KEY = "lr-mask-presets:settings";
+const SETTINGS_KEY = "partly:settings";
+const EARLIER_SETTINGS_KEY = "lr-mask-presets:settings"; // from 1.0.0, when the app was called LR Mask Presets
 
 function webPlatform() {
   return {
@@ -66,7 +67,7 @@ function webPlatform() {
       window.open(url, "_blank", "noopener");
     },
     async getSettings() {
-      try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"); } catch { return {}; }
+      try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || localStorage.getItem(EARLIER_SETTINGS_KEY) || "{}"); } catch { return {}; }
     },
     async setSettings(settings) {
       try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch { /* private mode */ }

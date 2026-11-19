@@ -64,10 +64,10 @@ struct Places {
         Places(home: FileManager.default.homeDirectoryForCurrentUser, systemLibrary: URL(fileURLWithPath: "/Library"), defaults: .standard)
     }
 
-    static func sandbox() -> Places {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent("lr-mask-presets-selftest-\(ProcessInfo.processInfo.processIdentifier)")
+    static func sandbox(_ tag: String = "selftest") -> Places {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("partly-\(tag)-\(ProcessInfo.processInfo.processIdentifier)")
         try? FileManager.default.removeItem(at: root)
-        let suite = "lr-mask-presets.selftest.\(ProcessInfo.processInfo.processIdentifier)"
+        let suite = "partly.\(tag).\(ProcessInfo.processInfo.processIdentifier)"
         let defaults = UserDefaults(suiteName: suite)!
         defaults.removePersistentDomain(forName: suite)
         return Places(home: root.appendingPathComponent("home"), systemLibrary: root.appendingPathComponent("Library"), defaults: defaults)
@@ -76,18 +76,12 @@ struct Places {
     var cameraRawUser: URL { home.appendingPathComponent("Library/Application Support/Adobe/CameraRaw/Settings") }
     var classicTemplates: URL { home.appendingPathComponent("Library/Application Support/Adobe/Lightroom/Develop Presets") }
     var cameraRawSystem: URL { systemLibrary.appendingPathComponent("Application Support/Adobe/CameraRaw/Settings") }
-    // Version 1.0.0 was called LR Mask Presets. Keep using its folders where they exist, so presets already installed
-    // aren't duplicated in a second folder and new exports land next to the earlier ones.
-    var installFolder: URL { earlier(cameraRawUser, "LR Mask Presets") ?? cameraRawUser.appendingPathComponent("Partly") }
-    private func earlier(_ parent: URL, _ name: String) -> URL? {
-        let url = parent.appendingPathComponent(name)
-        return FileManager.default.fileExists(atPath: url.path) ? url : nil
-    }
+    var installFolder: URL { cameraRawUser.appendingPathComponent("Partly") }
 
     var outputFolder: URL {
         get {
             if let path = defaults.string(forKey: "outputFolder"), !path.isEmpty { return URL(fileURLWithPath: path) }
-            return earlier(home, "Pictures/LR Mask Presets") ?? home.appendingPathComponent("Pictures/Partly")
+            return home.appendingPathComponent("Pictures/Partly")
         }
         nonmutating set { defaults.set(newValue.path, forKey: "outputFolder") }
     }
@@ -383,7 +377,7 @@ final class Bridge: NSObject, WKScriptMessageHandlerWithReply {
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage, replyHandler: @escaping (Any?, String?) -> Void) {
         guard let body = message.body as? [String: Any], let cmd = body["cmd"] as? String else { return replyHandler(nil, "Bad message") }
         // Only our own page may call in.
-        guard message.frameInfo.isMainFrame, message.frameInfo.securityOrigin.protocol == "lrmask" else { return replyHandler(nil, "Not allowed") }
+        guard message.frameInfo.isMainFrame, message.frameInfo.securityOrigin.protocol == "partly" else { return replyHandler(nil, "Not allowed") }
         handle(cmd, body) { result in replyHandler(result ?? NSNull(), nil) }
     }
 
@@ -587,6 +581,61 @@ func applyAppearance(_ theme: String?) {
     }
 }
 
+// MARK: - Moving over from LR Mask Presets
+
+/// Partly was called LR Mask Presets in 1.0.0 (and kept that app's ID and folders in 1.0.1). The first time it runs
+/// under its own name it takes over that app's settings and moves the folders it made to their new names: the exports
+/// folder and the Classic & Camera Raw install folder. Only folders it made, and only when nothing is in the way;
+/// saved paths (Recent Exports, the output folder) are rewritten, so everything still points at the right files.
+extension Places {
+    static let earlierDomain = "io.github.pvn-ptl.lr-mask-presets"
+    static let earlierName = "LR Mask Presets"
+
+    @discardableResult
+    func moveOverFromEarlierName(earlier: [String: Any]?) -> [String] {
+        guard !defaults.bool(forKey: "movedOverFromOldName") else { return [] }
+        var done: [String] = []
+        for key in ["settings", "outputFolder", "folders"] where defaults.object(forKey: key) == nil {
+            if let value = earlier?[key] { defaults.set(value, forKey: key); done.append("copied \(key)") }
+        }
+        let fm = FileManager.default
+        let moves = [
+            (home.appendingPathComponent("Pictures/\(Places.earlierName)"), home.appendingPathComponent("Pictures/Partly")),
+            (cameraRawUser.appendingPathComponent(Places.earlierName), installFolder),
+        ]
+        for (from, to) in moves where fm.fileExists(atPath: from.path) && !fm.fileExists(atPath: to.path) {
+            do {
+                try fm.moveItem(at: from, to: to)
+                rewritePaths(from: from.path, to: to.path)
+                done.append("moved \(from.lastPathComponent) to \(to.path)")
+            } catch {
+                done.append("couldn't move \(from.path): \(error.localizedDescription)")
+            }
+        }
+        defaults.set(true, forKey: "movedOverFromOldName")
+        return done
+    }
+
+    /// Every saved path inside `from` now lives inside `to`.
+    private func rewritePaths(from: String, to: String) {
+        func moved(_ path: String) -> String { path == from || path.hasPrefix(from + "/") ? to + path.dropFirst(from.count) : path }
+        func walk(_ value: Any) -> Any {
+            switch value {
+            case let text as String: return moved(text)
+            case let list as [Any]: return list.map(walk)
+            case let map as [String: Any]: return map.mapValues(walk)
+            default: return value
+            }
+        }
+        if let path = defaults.string(forKey: "outputFolder") { defaults.set(moved(path), forKey: "outputFolder") }
+        if let folders = defaults.stringArray(forKey: "folders") { defaults.set(folders.map(moved), forKey: "folders") }
+        if let text = defaults.string(forKey: "settings"), let json = try? JSONSerialization.jsonObject(with: Data(text.utf8)),
+           let data = try? JSONSerialization.data(withJSONObject: walk(json)) {
+            defaults.set(String(decoding: data, as: UTF8.self), forKey: "settings")
+        }
+    }
+}
+
 // MARK: - App
 
 final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, WKUIDelegate {
@@ -602,6 +651,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         self.options = options
         // Test modes never touch the real home, except a snapshot that asks to read it (--real).
         self.places = options.selftest || (options.snapshot != nil && !options.real) ? .sandbox() : .real()
+        if !options.selftest && options.snapshot == nil {
+            places.moveOverFromEarlierName(earlier: UserDefaults.standard.persistentDomain(forName: Places.earlierDomain))
+        }
     }
 
     func applicationDidFinishLaunching(_ note: Notification) {
@@ -612,7 +664,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
 
         let webRoot = Bundle.main.resourceURL!.appendingPathComponent("web")
         let config = WKWebViewConfiguration()
-        config.setURLSchemeHandler(SchemeHandler(root: webRoot), forURLScheme: "lrmask")
+        config.setURLSchemeHandler(SchemeHandler(root: webRoot), forURLScheme: "partly")
         bridge = Bridge(places: places)
         config.userContentController.addScriptMessageHandler(bridge, contentWorld: .page, name: "native")
         config.userContentController.addUserScript(WKUserScript(
@@ -663,7 +715,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         var query: [String] = []
         if options.demo || options.selftest { query.append("demo") }
         if let theme = options.theme { query.append("theme=\(theme)") }
-        webView.load(URLRequest(url: URL(string: "lrmask://app/index.html" + (query.isEmpty ? "" : "?" + query.joined(separator: "&")))!))
+        webView.load(URLRequest(url: URL(string: "partly://app/index.html" + (query.isEmpty ? "" : "?" + query.joined(separator: "&")))!))
 
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -704,7 +756,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
     // Keep navigation inside the app; real web links open in the browser.
     func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         guard let url = action.request.url else { return decisionHandler(.cancel) }
-        if url.scheme == "lrmask" { return decisionHandler(.allow) }
+        if url.scheme == "partly" { return decisionHandler(.allow) }
         if url.scheme == "https" { NSWorkspace.shared.open(url) }
         decisionHandler(.cancel)
     }
@@ -833,6 +885,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
             .write(to: places.classicTemplates.appendingPathComponent("Old Look.lrtemplate"))
     }
 
+    /// 1.0.0's folders and settings, in a throwaway home: moved and rewritten once, left alone after that.
+    private func checkMoveOver() -> Bool {
+        let p = Places.sandbox("moveover")
+        defer {
+            try? FileManager.default.removeItem(at: p.home.deletingLastPathComponent())
+            p.defaults.removePersistentDomain(forName: "partly.moveover.\(ProcessInfo.processInfo.processIdentifier)")
+        }
+        let fm = FileManager.default
+        let oldOut = p.home.appendingPathComponent("Pictures/LR Mask Presets"), oldInstall = p.cameraRawUser.appendingPathComponent("LR Mask Presets")
+        for dir in [oldOut, oldInstall] { try? fm.createDirectory(at: dir, withIntermediateDirectories: true) }
+        try? Data("x".utf8).write(to: oldOut.appendingPathComponent("export.zip"))
+        try? Data("x".utf8).write(to: oldInstall.appendingPathComponent("Sky - Look.xmp"))
+        let history = "{\"theme\":\"dark\",\"history\":[{\"zip\":\"\(oldOut.path)/export.zip\",\"folder\":\"\(oldOut.path)\"}]}"
+        let notes = p.moveOverFromEarlierName(earlier: ["settings": history, "outputFolder": oldOut.path])
+        let newOut = p.home.appendingPathComponent("Pictures/Partly")
+        let settings = p.defaults.string(forKey: "settings") ?? ""
+        let moved = fm.fileExists(atPath: newOut.appendingPathComponent("export.zip").path)
+            && fm.fileExists(atPath: p.installFolder.appendingPathComponent("Sky - Look.xmp").path)
+            && !fm.fileExists(atPath: oldOut.path) && !fm.fileExists(atPath: oldInstall.path)
+        let saved = (try? JSONSerialization.jsonObject(with: Data(settings.utf8))) as? [String: Any]
+        let entry = (saved?["history"] as? [[String: Any]])?.first
+        let rewritten = p.defaults.string(forKey: "outputFolder") == newOut.path && saved?["theme"] as? String == "dark"
+            && entry?["zip"] as? String == newOut.appendingPathComponent("export.zip").path && entry?["folder"] as? String == newOut.path
+        try? fm.createDirectory(at: oldOut, withIntermediateDirectories: true)
+        let once = p.moveOverFromEarlierName(earlier: ["settings": "{}"]).isEmpty && fm.fileExists(atPath: oldOut.path)
+        if !(moved && rewritten && once) { print("     move-over: \(notes) moved=\(moved) rewritten=\(rewritten) once=\(once) settings=\(settings)") }
+        return moved && rewritten && once
+    }
+
     private func runSelftest() {
         let script = """
         const native = (cmd, args = {}) => window.webkit.messageHandlers.native.postMessage({ cmd, ...args });
@@ -895,7 +976,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
                 }
                 let escaped = FileManager.default.fileExists(atPath: self.places.cameraRawUser.appendingPathComponent("escape.xmp").path)
                 print("\(escaped ? "FAIL" : "ok  ") nothing written outside the install folder")
-                self.finish(ok && !escaped, ok ? "SELFTEST OK" : "SELFTEST FAILED")
+                let movedOver = self.checkMoveOver()
+                print("\(movedOver ? "ok  " : "FAIL") takes over LR Mask Presets' settings and folders")
+                self.finish(ok && !escaped && movedOver, ok && !escaped && movedOver ? "SELFTEST OK" : "SELFTEST FAILED")
             }
         }
     }
@@ -922,7 +1005,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
 
     private func finish(_ ok: Bool, _ message: String) {
         print(message)
-        if places.home.path.contains("lr-mask-presets-selftest-") {
+        if places.home.path.contains("partly-selftest-") {
             try? FileManager.default.removeItem(at: places.home.deletingLastPathComponent())
         }
         fflush(stdout)

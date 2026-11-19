@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Command-line version: convert presets without the app.
-//   node cli/lrmask.mjs <files, folders or .zip packs…> [options]
+//   node cli/partly.mjs <files, folders or .zip packs…> [options]
 // Run with --help for the options.
 
 import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync, existsSync } from "node:fs";
@@ -8,7 +8,7 @@ import { basename, join, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import * as core from "../web/core/index.js";
 
-const HELP = `Usage: lrmask <presets…> [options]
+const HELP = `Usage: partly <presets…> [options]
 
 Turns Lightroom presets into presets that apply the look inside an AI mask.
 <presets> can be .xmp or .lrtemplate files, .zip preset packs, or folders (searched recursively).
@@ -130,6 +130,6 @@ async function main(argv) {
 }
 
 main(process.argv.slice(2)).then((code) => { process.exitCode = code ?? 0; }, (err) => {
-  console.error(`lrmask: ${err.message}`);
+  console.error(`partly: ${err.message}`);
   process.exitCode = 1;
 });

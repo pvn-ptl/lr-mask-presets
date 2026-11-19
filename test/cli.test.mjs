@@ -8,10 +8,10 @@ import { fileURLToPath } from "node:url";
 import { readZip } from "../web/core/zip.js";
 import { FIXTURES, SAMPLES, inspect } from "./helpers.mjs";
 
-const CLI = fileURLToPath(new URL("../cli/lrmask.mjs", import.meta.url));
+const CLI = fileURLToPath(new URL("../cli/partly.mjs", import.meta.url));
 
 test("converts a folder to several masks and writes files plus a zip", async () => {
-  const out = mkdtempSync(join(tmpdir(), "lrmask-cli-"));
+  const out = mkdtempSync(join(tmpdir(), "partly-cli-"));
   try {
     const log = execFileSync(process.execPath, [CLI, SAMPLES, "--mask", "background,sky", "--out", out], { encoding: "utf8" });
     assert.match(log, /Wrote 16 presets/);
@@ -39,7 +39,7 @@ test("dry run explains each preset; bad masks are refused", () => {
 });
 
 test("combined masks and a lighter amount from the command line", async () => {
-  const out = mkdtempSync(join(tmpdir(), "lrmask-cli-"));
+  const out = mkdtempSync(join(tmpdir(), "partly-cli-"));
   try {
     const log = execFileSync(process.execPath, [CLI, join(FIXTURES, "full_look.xmp"), "--mask", "subject +water -hair", "--amount", "50", "--out", out], { encoding: "utf8" });
     assert.match(log, /Wrote 1 presets/);

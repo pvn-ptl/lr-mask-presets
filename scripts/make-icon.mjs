@@ -10,7 +10,7 @@ import { launch } from "./cdp.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const svg = readFileSync(join(root, "web/favicon.svg"), "utf8");
-const work = mkdtempSync(join(tmpdir(), "lrmask-icon-"));
+const work = mkdtempSync(join(tmpdir(), "partly-icon-"));
 const page = await launch({ width: 1024, height: 1024, scale: 1 });
 try {
   await page.send("Emulation.setDefaultBackgroundColorOverride", { color: { r: 0, g: 0, b: 0, a: 0 } });

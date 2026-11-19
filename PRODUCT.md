@@ -37,7 +37,7 @@ approximately, to the whole photo, or not at all.
 
 - macOS 13 or later, Apple silicon and Intel. One Swift file plus the web interface; no dependencies.
 - Entirely local: no network requests. Lightroom's own files are only ever read. The app writes only to its output
-  folder and, on request, `~/Library/Application Support/Adobe/CameraRaw/Settings/Partly` (or `LR Mask Presets`, where 1.0.0 installed them).
+  folder and, on request, `~/Library/Application Support/Adobe/CameraRaw/Settings/Partly` (1.0.0's `LR Mask Presets` folders are moved to the new names on first launch).
 - 24 masks in three families (scene, people, landscape). Each setting is reported as Exact, Approximate, Whole photo
   or Not in mask.
 - Accepts `.xmp`, `.lrtemplate`, `.zip` packs and folders, by picker or drag and drop.

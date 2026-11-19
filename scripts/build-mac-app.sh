@@ -51,7 +51,7 @@ ditto "$APP" "$STAGE/$NAME.app"
 ln -s /Applications "$STAGE/Applications"
 cp macos/AppIcon.icns "$STAGE/.VolumeIcon.icns"
 hdiutil create -quiet -volname "$NAME" -srcfolder "$STAGE" -fs HFS+ -format UDRW -ov "$RW"
-MNT=$(mktemp -d "${TMPDIR:-/tmp}/lrmask-dmg.XXXXXX")
+MNT=$(mktemp -d "${TMPDIR:-/tmp}/partly-dmg.XXXXXX")
 hdiutil attach -quiet -readwrite -nobrowse -noautoopen -mountpoint "$MNT" "$RW"
 SetFile -a C "$MNT" 2>/dev/null || xcrun SetFile -a C "$MNT" 2>/dev/null || echo "note: SetFile not found; the volume keeps the generic icon"
 hdiutil detach -quiet "$MNT" || hdiutil detach -quiet -force "$MNT"

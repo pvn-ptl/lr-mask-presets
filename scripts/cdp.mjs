@@ -20,7 +20,7 @@ export function findChrome() {
 export async function launch({ width = 1440, height = 900, scale = 2, dark = false } = {}) {
   const chrome = findChrome();
   if (!chrome) throw new Error("Chrome not found (set CHROME=/path/to/chrome)");
-  const profile = mkdtempSync(join(tmpdir(), "lrmask-chrome-"));
+  const profile = mkdtempSync(join(tmpdir(), "partly-chrome-"));
   const proc = spawn(chrome, [
     "--headless=new", "--remote-debugging-port=0", `--user-data-dir=${profile}`, "--no-first-run", "--no-default-browser-check",
     "--hide-scrollbars", "--disable-gpu", "--disable-extensions", "--force-color-profile=srgb", "--font-render-hinting=none",

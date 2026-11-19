@@ -157,10 +157,10 @@ files, or a drop), and the result downloads as a `.zip`. No install, no build st
 **From the command line:**
 
 ```sh
-node cli/lrmask.mjs ~/Downloads/MyPresetPack.zip --mask background,sky --out ~/Desktop/masked
-node cli/lrmask.mjs MyLook.xmp --mask "subject +water -hair" --amount 50
-node cli/lrmask.mjs "$HOME/Library/Application Support/Adobe/CameraRaw/Settings" --dry-run   # see what carries over
-node cli/lrmask.mjs --list-masks
+node cli/partly.mjs ~/Downloads/MyPresetPack.zip --mask background,sky --out ~/Desktop/masked
+node cli/partly.mjs MyLook.xmp --mask "subject +water -hair" --amount 50
+node cli/partly.mjs "$HOME/Library/Application Support/Adobe/CameraRaw/Settings" --dry-run   # see what carries over
+node cli/partly.mjs --list-masks
 ```
 
 Other options: `--whole-photo`, `--vibrance`, `--no-parametric`, `--no-grayscale`, `--no-detail`, `--group "{target} · {group}"`.
@@ -203,8 +203,8 @@ scripts/       build, sample presets, icon, docs screenshots, real-library smoke
 
 The sample presets in `web/samples` are original looks made for this project (`node scripts/make-samples.mjs`).
 
-Partly was called LR Mask Presets in version 1.0.0. Presets it made then are still recognised, and it keeps using
-the same folders if you have them.
+Partly was called LR Mask Presets in version 1.0.0. The first time Partly runs, it moves that version's settings and
+folders over to the new name, and still recognises the presets it made back then.
 
 ---
 

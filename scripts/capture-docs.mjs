@@ -187,7 +187,7 @@ const server = await serve(0, routes);
 const base = `http://127.0.0.1:${server.address().port}/`;
 const page = await launch({ width: W, height: H, scale: 2 });
 await page.send("Page.addScriptToEvaluateOnNewDocument", { source: BRIDGE });
-const work = mkdtempSync(join(tmpdir(), "lrmask-docs-"));
+const work = mkdtempSync(join(tmpdir(), "partly-docs-"));
 try {
   await stills(page, base);
   const frames = await demo(page, base, work);

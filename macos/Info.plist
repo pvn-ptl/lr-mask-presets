@@ -11,7 +11,7 @@
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>io.github.pvn-ptl.lr-mask-presets</string>
+	<string>io.github.pvn-ptl.partly</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -43,8 +43,8 @@
 			<string>Alternate</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>io.github.pvn-ptl.lr-mask-presets.xmp</string>
-				<string>io.github.pvn-ptl.lr-mask-presets.lrtemplate</string>
+				<string>io.github.pvn-ptl.partly.xmp</string>
+				<string>io.github.pvn-ptl.partly.lrtemplate</string>
 				<string>public.zip-archive</string>
 				<string>public.folder</string>
 			</array>
@@ -54,7 +54,7 @@
 	<array>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>io.github.pvn-ptl.lr-mask-presets.xmp</string>
+			<string>io.github.pvn-ptl.partly.xmp</string>
 			<key>UTTypeDescription</key>
 			<string>XMP preset</string>
 			<key>UTTypeConformsTo</key>
@@ -71,7 +71,7 @@
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>io.github.pvn-ptl.lr-mask-presets.lrtemplate</string>
+			<string>io.github.pvn-ptl.partly.lrtemplate</string>
 			<key>UTTypeDescription</key>
 			<string>Lightroom Classic template</string>
 			<key>UTTypeConformsTo</key>
