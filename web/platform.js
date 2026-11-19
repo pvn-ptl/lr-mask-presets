@@ -25,6 +25,8 @@ function nativePlatform(handler) {
     setSettings: (settings) => call("setSettings", { settings }),
     ready: (info) => call("ready", info || {}),
     log: (message) => call("log", { message: String(message) }),
+    // Rectangles (in page points) where a mouse-down drags the window, and the controls cut out of them.
+    dragRegions: ({ regions, holes }) => call("dragRegions", { regions, holes }),
   };
 }
 

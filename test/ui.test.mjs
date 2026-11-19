@@ -28,8 +28,8 @@ async function open(query = "demo") {
 
 test("starts with a welcome screen and no errors", { skip }, async () => {
   await open("");
-  assert.match(await page.eval("document.querySelector('#detail').textContent"), /Turn any Lightroom preset/);
-  await page.click("#detail .found button:nth-child(3)"); // Try sample presets
+  assert.match(await page.eval("document.querySelector('#list').textContent"), /Turn any Lightroom preset/);
+  await page.click("#list .found button:nth-child(3)"); // Try sample presets
   await page.waitFor("app.state.entries.length === 8");
   assert.deepEqual(page.errors, []);
 });
@@ -37,10 +37,10 @@ test("starts with a welcome screen and no errors", { skip }, async () => {
 test("shows a preset's carry-over table and updates when options change", { skip }, async () => {
   await open();
   await page.eval("app.show('Moody Teal')");
-  const before = await page.eval("[...document.querySelectorAll('tr.lost td.setting')].map((td) => td.textContent)");
+  const before = await page.eval("[...document.querySelectorAll('#detail .inspector-scroll:not(.leaving) tr.lost td.setting')].map((td) => td.firstChild.textContent)");
   assert.ok(before.includes("Color Mixer (HSL)"));
   await page.eval("app.setOption('leftovers', 'global')");
-  const after = await page.eval("[...document.querySelectorAll('tr.global td.setting')].map((td) => td.textContent)");
+  const after = await page.eval("[...document.querySelectorAll('#detail .inspector-scroll:not(.leaving) tr.global td.setting')].map((td) => td.firstChild.textContent)");
   assert.ok(after.includes("Color Mixer (HSL)"));
   assert.ok(await page.eval("Boolean(document.querySelector('.mini-curve svg polyline'))"));
 });
@@ -49,10 +49,32 @@ test("search, ticking and the mask chips drive the tally", { skip }, async () =>
   await open();
   await page.eval("document.querySelector('#search').value = 'moody'; document.querySelector('#search').dispatchEvent(new Event('input'))");
   assert.equal(await page.eval("document.querySelectorAll('#list .item').length"), 3);
-  await page.click("#listTools input[type=checkbox]");
+  await page.click("#selectAll");
+  await page.click("#masksButton");
   await page.click('[data-target="sky"]');
   assert.match(await page.eval("document.querySelector('.tally').textContent"), /3 presets × 2 masks = 6 new presets/);
-  assert.match(await page.eval("document.querySelector('#createButton').textContent"), /Create 6 presets/);
+  assert.match(await page.eval("document.querySelector('#createButton').textContent"), /Create 6 Presets/);
+  assert.equal(await page.eval("document.querySelectorAll('#bar .chip[data-chip]').length"), 2);
+});
+
+test("list view sorts, and clicks select like Finder", { skip }, async () => {
+  await open("demo&view=list");
+  assert.equal(await page.eval("document.querySelectorAll('#list .row').length"), 8);
+  const names = () => page.eval("[...document.querySelectorAll('#list .row .name')].map((n) => n.textContent)");
+  const first = (await names())[0];
+  await page.click("#list .list-head .sort");
+  assert.notEqual((await names())[0], first, "clicking Name again reverses the order");
+  await page.click("#list .row:nth-of-type(2)");
+  assert.equal(await page.eval("app.state.checked.size"), 1);
+  await page.eval(`(() => { const r = document.querySelector('#list .row:nth-of-type(5)'); r.dispatchEvent(new MouseEvent('click', { bubbles: true, shiftKey: true })); })()`);
+  assert.equal(await page.eval("app.state.checked.size"), 4, "shift-click selects the range");
+  await page.eval(`(() => { const r = document.querySelector('#list .row:nth-of-type(3)'); r.dispatchEvent(new MouseEvent('click', { bubbles: true, metaKey: true })); })()`);
+  assert.equal(await page.eval("app.state.checked.size"), 3, "command-click toggles one");
+  assert.match(await page.eval("document.querySelector('#createButton').textContent"), /Create 3 Presets/);
+  await page.eval("app.setView('grid')");
+  await page.waitFor("document.querySelectorAll('#list .tile').length === 8");
+  assert.equal(await page.eval("document.querySelectorAll('#list .tile[aria-selected=true]').length"), 3, "the selection survives the switch");
+  assert.deepEqual(page.errors, []);
 });
 
 test("creating presets downloads a zip and explains how to import it", { skip }, async () => {
@@ -73,7 +95,7 @@ test("preset names from files are shown as text, never run as HTML", { skip }, a
   await new Promise((r) => setTimeout(r, 300));
   assert.equal(await page.eval("document.querySelectorAll('#list img, #detail img, #list b, #detail h2 b').length"), 0);
   assert.equal(await page.eval("window.pwned === undefined"), true);
-  assert.match(await page.eval("document.querySelector('#detail h2').textContent"), /<img src=x/);
+  assert.match(await page.eval("document.querySelector('#detail .inspector-scroll:not(.leaving) h2.title').textContent"), /<img src=x/);
 });
 
 test("dropping a broken file explains the problem", { skip }, async () => {

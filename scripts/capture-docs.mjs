@@ -13,7 +13,7 @@ import { serve } from "./serve.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const DOCS = join(ROOT, "docs");
-const W = 1320, H = 820, BAR = 30, PAD = 56;
+const W = 1320, H = 840, PAD = 64;
 
 // Stand-in for the Swift side (see macos/main.swift, Bridge.handle).
 const BRIDGE = `
@@ -38,22 +38,36 @@ if (location.pathname === "/index.html") {
   window.webkit = { messageHandlers: { native: { postMessage: async (m) => (answers[m.cmd] ? answers[m.cmd](m) : true) } } };
 }`;
 
+// An abstract desktop picture made for these screenshots (soft colour fields, nothing borrowed).
+const WALLPAPER = {
+  dark: "radial-gradient(60% 70% at 18% 22%, #3a4f9a 0%, transparent 70%), radial-gradient(55% 60% at 85% 18%, #7a3f8f 0%, transparent 70%), radial-gradient(70% 60% at 60% 95%, #c4683a 0%, transparent 70%), #141826",
+  light: "radial-gradient(60% 70% at 18% 22%, #9ec1ff 0%, transparent 70%), radial-gradient(55% 60% at 85% 18%, #e5b8f0 0%, transparent 70%), radial-gradient(70% 60% at 60% 95%, #ffc896 0%, transparent 70%), #eef1f8",
+};
+
+// The page leaves its sidebar clear for the window's vibrancy (NSVisualEffectView in main.swift).
+// Here a blurred, tinted copy of the desktop stands in for it, and the traffic lights are drawn on top.
 function frame({ theme, padded }) {
   const dark = theme === "dark";
   return `<!doctype html><meta charset="utf-8"><style>
-html, body { margin: 0; background: ${padded ? "transparent" : dark ? "#1d1d20" : "#fff"}; }
-.win { position: relative; width: ${W}px; height: ${H + BAR}px; margin: ${padded ? PAD : 0}px; overflow: hidden; background: ${dark ? "#1d1d20" : "#fff"};
-  ${padded ? `border-radius: 12px; box-shadow: 0 28px 70px rgba(0,0,0,.32), 0 0 0 1px rgba(0,0,0,${dark ? 0.5 : 0.12});` : ""} }
-.bar { height: ${BAR}px; display: flex; align-items: center; justify-content: center; font: 600 13px -apple-system, "SF Pro Text", system-ui, sans-serif; color: ${dark ? "#a1a1aa" : "#5f5f69"}; }
-.lights { position: absolute; left: 13px; top: ${BAR / 2 - 6}px; display: flex; gap: 8px; }
-.lights i { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.2); }
-iframe { display: block; border: 0; width: ${W}px; height: ${H}px; }
+html, body { margin: 0; height: 100%; }
+body { background: ${padded ? WALLPAPER[theme] : dark ? "#1d1d20" : "#fff"}; }
+.win { position: relative; width: ${W}px; height: ${H}px; margin: ${padded ? PAD : 0}px; overflow: hidden; isolation: isolate;
+  ${padded ? `border-radius: 16px; box-shadow: 0 30px 80px rgba(0,0,0,${dark ? 0.55 : 0.28}), 0 0 0 1px rgba(${dark ? "255,255,255,.14" : "0,0,0,.12"});` : ""} }
+.material { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+.material::before { content: ""; position: absolute; inset: -${padded ? PAD : 120}px; background: ${WALLPAPER[theme]}; filter: blur(48px) saturate(1.5);
+  ${padded ? `background-attachment: fixed;` : ""} }
+.material::after { content: ""; position: absolute; inset: 0; background: ${dark ? "rgba(30,30,34,.62)" : "rgba(246,246,248,.55)"}; }
+.lights { position: absolute; left: 20px; top: 20px; display: flex; gap: 8px; z-index: 2; }
+.lights i { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.22); }
+:root, iframe { color-scheme: ${theme}; }
+iframe { display: block; border: 0; width: ${W}px; height: ${H}px; background: transparent; }
 #cursor { position: absolute; left: 0; top: 0; width: 24px; height: 24px; pointer-events: none; z-index: 10; transform: translate(-200px, -200px); filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
-#ripple { position: absolute; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; background: rgba(77,155,255,.45); pointer-events: none; opacity: 0; z-index: 9; }
+#ripple { position: absolute; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; background: rgba(77,155,255,.45); pointer-events: none; opacity: 0; z-index: 9; transition: opacity .15s; }
 </style>
 <div class="win">
-  <div class="bar"><div class="lights"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>LR Mask Presets</div>
-  <iframe id="app" src="/index.html?theme=${theme}"></iframe>
+  <div class="material"></div>
+  <div class="lights"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+  <iframe id="app" src="/index.html?theme=${theme}" allowtransparency="true"></iframe>
   <div id="ripple"></div>
   <svg id="cursor" viewBox="0 0 24 24"><path d="M5 2.5v17.2l4.3-4.1 2.8 6.2 2.9-1.3-2.8-6.1h6z" fill="#000" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
 </div>`;
@@ -61,12 +75,13 @@ iframe { display: block; border: 0; width: ${W}px; height: ${H}px; }
 
 async function openFrame(page, base, opts) {
   await page.send("Emulation.setDeviceMetricsOverride", {
-    width: W + (opts.padded ? PAD * 2 : 0), height: H + BAR + (opts.padded ? PAD * 2 : 0), deviceScaleFactor: opts.scale, mobile: false,
+    width: W + (opts.padded ? PAD * 2 : 0), height: H + (opts.padded ? PAD * 2 : 0), deviceScaleFactor: opts.scale, mobile: false,
   });
   await page.send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: opts.theme }] });
   await page.goto(`${base}frame-${opts.theme}-${opts.padded ? "padded" : "flat"}.html`);
   await page.waitFor("document.querySelector('#app').contentDocument?.documentElement.dataset.ready === '1'");
   await page.eval("document.fonts.ready.then(() => true)");
+  await sleep(700); // let the first animations settle
 }
 
 const inApp = (js) => `(() => { const app = document.querySelector('#app').contentWindow.app; const doc = document.querySelector('#app').contentDocument; ${js} })()`;
@@ -94,18 +109,23 @@ async function stills(page, base) {
   await page.send("Emulation.setDefaultBackgroundColorOverride", { color: { r: 0, g: 0, b: 0, a: 0 } });
 
   await openFrame(page, base, { theme: "dark", padded: true, scale: 2 });
-  await page.eval(inApp(`app.show("Moody Teal"); app.setTargets(["background", "sky"]); app.check(["Moody Teal", "Night City", "Faded Film"]);`));
-  await sleep(300);
+  await page.eval(inApp(`app.setTargets(["background", "sky", "water"]); app.check(["Moody Teal", "Night City", "Faded Film"]); app.show("Moody Teal");`));
+  await sleep(1200);
   await shot(page, "screenshot-dark.png");
 
   await openFrame(page, base, { theme: "light", padded: true, scale: 2 });
-  await page.eval(inApp(`app.show("Golden Hour Glow"); app.setTargets(["skin", "hair"]); app.setOption("leftovers", "global");`));
-  await sleep(300);
+  await page.eval(inApp(`app.setView("list"); app.setTargets(["skin", "hair"]); app.setOption("leftovers", "global"); app.show("Golden Hour Glow");`));
+  await sleep(1200);
   await shot(page, "screenshot-light.png");
+
+  await openFrame(page, base, { theme: "dark", padded: true, scale: 2 });
+  await page.eval(inApp(`app.setTargets(["background", "sky", "skin"]); app.check(["Golden Hour Glow", "Soft Pastel"]); app.show("Golden Hour Glow"); app.openMasks();`));
+  await sleep(1200);
+  await shot(page, "masks-dark.png");
 
   await openFrame(page, base, { theme: "light", padded: true, scale: 2 });
   await page.eval(inApp(`app.check(["Golden Hour Glow", "Soft Pastel", "Clean & Bright"]); app.setTargets(["background", "sky"]); return app.create();`));
-  await sleep(400);
+  await sleep(1400);
   await shot(page, "done-light.png");
 
   await page.send("Emulation.setDefaultBackgroundColorOverride", {});
@@ -113,7 +133,8 @@ async function stills(page, base) {
 
 async function demo(page, base, work) {
   await openFrame(page, base, { theme: "dark", padded: false, scale: 1 });
-  await page.eval(inApp(`app.show("Golden Hour Glow"); app.setTargets(["background"]); doc.querySelector('.create-scroll').scrollTop = 0;`));
+  await page.eval(inApp(`app.setView("grid"); app.setTargets(["background"]); app.show("Golden Hour Glow");`));
+  await sleep(900);
   const frames = [];
   let cursor = { x: W * 0.55, y: H * 0.7 };
   const capture = async (ms) => {
@@ -131,29 +152,33 @@ async function demo(page, base, work) {
     }
     cursor = to;
   };
-  const click = async (selector, hold = 700) => {
+  const click = async (selector, hold = 700, { settle = 0, during = 0 } = {}) => {
     const p = await spot(page, selector);
     await move(p);
+    await page.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: p.x, y: p.y });
     await page.eval(`(() => { const r = document.querySelector('#ripple'); r.style.left = '${p.x}px'; r.style.top = '${p.y}px'; r.style.opacity = 1; })()`);
     for (const type of ["mousePressed", "mouseReleased"]) await page.send("Input.dispatchMouseEvent", { type, x: p.x, y: p.y, button: "left", clickCount: 1 });
+    // Frames while the click animates (popovers springing open, the grid morphing into the list).
+    for (let i = 0; i < during; i++) await capture(50);
     await sleep(120);
-    await capture(160);
     await page.eval("document.querySelector('#ripple').style.opacity = 0");
-    await sleep(120);
+    await sleep(settle);
+    await capture(160);
     await capture(hold);
   };
 
   await place(cursor);
-  await capture(1600);
-  await click('.item[data-id] .name[title="Moody Teal"]', 1500);
-  await click('[data-target="sky"]', 600);
-  await click('[data-family="people"] > button', 400);
-  await click('[data-target="skin"]', 900);
-  await click('.segmented button:nth-child(2)', 1500);
-  await click('.item:has(.name[title="Moody Teal"]) input', 250);
-  await click('.item:has(.name[title="Night City"]) input', 250);
-  await click('.item:has(.name[title="Faded Film"]) input', 1100);
-  await click("#createButton", 3600);
+  await capture(1400);
+  await click('.tile .name[title="Moody Teal"]', 1300, { during: 6 });
+  await click("#masksButton", 500, { during: 6 });
+  await click('[data-target="sky"]', 350);
+  await click('[data-target="skin"]', 600);
+  await click('[data-leftovers="global"]', 1100);
+  await click("#pickerDone", 500, { during: 3 });
+  await click('.tile:has(.name[title="Night City"]) .check', 250, { during: 3 });
+  await click('.tile:has(.name[title="Faded Film"]) .check', 1200, { during: 3 });
+  await click("#viewList", 1600, { during: 10 });
+  await click("#createButton", 3600, { during: 8 });
   return frames;
 }
 

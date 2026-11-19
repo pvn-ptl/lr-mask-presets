@@ -255,11 +255,54 @@ final class SchemeHandler: NSObject, WKURLSchemeHandler {
     }
 }
 
+// MARK: - The window's web view
+
+/// The page fills the whole window, title bar included. The page reports where its toolbar is (minus its buttons),
+/// and a mouse-down there moves the window like a native title bar would.
+final class AppWebView: WKWebView {
+    var dragRegions: [NSRect] = []
+    var dragHoles: [NSRect] = []
+
+    override var mouseDownCanMoveWindow: Bool { false }
+
+    override func mouseDown(with event: NSEvent) {
+        let p = convert(event.locationInWindow, from: nil)
+        let page = NSPoint(x: p.x, y: isFlipped ? p.y : bounds.height - p.y)
+        guard dragRegions.contains(where: { $0.contains(page) }), !dragHoles.contains(where: { $0.contains(page) }), let window else {
+            return super.mouseDown(with: event)
+        }
+        if event.clickCount == 2 {
+            let action = UserDefaults.standard.persistentDomain(forName: UserDefaults.globalDomain)?["AppleActionOnDoubleClick"] as? String
+            switch action {
+            case "Minimize": window.performMiniaturize(nil)
+            case "None": break
+            default: window.performZoom(nil)
+            }
+        } else {
+            window.performDrag(with: event)
+        }
+    }
+
+    static func rects(_ value: Any?) -> [NSRect] {
+        ((value as? [[Any]]) ?? []).compactMap { r in
+            let n = r.compactMap { ($0 as? NSNumber)?.doubleValue }
+            return n.count == 4 ? NSRect(x: n[0], y: n[1], width: n[2], height: n[3]) : nil
+        }
+    }
+}
+
+/// Whether the user asked macOS for less transparency (System Settings › Accessibility › Display).
+func reduceTransparencyScript() -> String {
+    let on = NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency
+    return "document.documentElement.classList.toggle('reduce-transparency', \(on));"
+}
+
 // MARK: - The bridge the page talks to
 
 final class Bridge: NSObject, WKScriptMessageHandlerWithReply {
     let places: Places
     weak var window: NSWindow?
+    weak var webView: AppWebView?
     var onReady: (([String: Any]) -> Void)?
 
     init(places: Places) { self.places = places }
@@ -399,6 +442,11 @@ final class Bridge: NSObject, WKScriptMessageHandlerWithReply {
             onReady?(body)
             reply(["version": appVersion])
 
+        case "dragRegions":
+            webView?.dragRegions = AppWebView.rects(body["regions"])
+            webView?.dragHoles = AppWebView.rects(body["holes"])
+            reply(true)
+
         case "log":
             FileHandle.standardError.write(Data("[page] \(body["message"] as? String ?? "")\n".utf8))
             reply(true)
@@ -474,28 +522,53 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         bridge = Bridge(places: places)
         config.userContentController.addScriptMessageHandler(bridge, contentWorld: .page, name: "native")
         config.userContentController.addUserScript(WKUserScript(
-            source: "document.documentElement.dataset.version = \(jsonString(appVersion));", injectionTime: .atDocumentStart, forMainFrameOnly: true))
+            source: "document.documentElement.dataset.version = \(jsonString(appVersion)); \(reduceTransparencyScript())",
+            injectionTime: .atDocumentStart, forMainFrameOnly: true))
 
-        webView = WKWebView(frame: NSRect(origin: .zero, size: options.size), configuration: config)
+        let web = AppWebView(frame: NSRect(origin: .zero, size: options.size), configuration: config)
+        webView = web
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.setValue(false, forKey: "drawsBackground")
+        webView.autoresizingMask = [.width, .height]
         #if DEBUG
         if #available(macOS 13.3, *) { webView.isInspectable = true }
         #endif
 
-        window = NSWindow(contentRect: NSRect(origin: .zero, size: options.size), styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
+        // The page draws edge to edge, under a clear title bar. A toolbar (with nothing in it) makes the title bar
+        // as tall as the page's own toolbar, so the traffic lights sit in the sidebar the way they do in Finder.
+        window = NSWindow(contentRect: NSRect(origin: .zero, size: options.size),
+                          styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView], backing: .buffered, defer: false)
         window.title = "LR Mask Presets"
+        window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
+        window.titlebarSeparatorStyle = .none
+        let toolbar = NSToolbar(identifier: "main")
+        toolbar.showsBaselineSeparator = false
+        window.toolbar = toolbar
+        window.toolbarStyle = .unified
         window.backgroundColor = NSColor(name: nil) { appearance in
             appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? NSColor(srgbRed: 0x1d / 255, green: 0x1d / 255, blue: 0x20 / 255, alpha: 1) : .white
         }
         window.minSize = NSSize(width: 980, height: 620)
-        window.contentView = webView
+
+        // Real vibrancy behind the page. The page leaves its sidebar clear, so the desktop shows through there.
+        let material = NSVisualEffectView(frame: NSRect(origin: .zero, size: options.size))
+        material.material = .sidebar
+        material.blendingMode = .behindWindow
+        material.state = .followsWindowActiveState
+        material.autoresizingMask = [.width, .height]
+        webView.frame = material.bounds
+        material.addSubview(webView)
+        window.contentView = material
         window.setFrameAutosaveName(options.snapshot == nil && !options.selftest ? "Main" : "")
         if options.snapshot != nil || options.selftest { window.setContentSize(options.size) }
         window.center()
+        NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.accessibilityDisplayOptionsDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.webView.evaluateJavaScript(reduceTransparencyScript())
+        }
         bridge.window = window
+        bridge.webView = web
         bridge.onReady = { [weak self] _ in self?.pageDidBecomeReady() }
 
         var query: [String] = []
@@ -626,6 +699,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
             .separator(),
             find,
             item("Select No Presets", "selectNone", "a", [.command, .shift]),
+        ])
+        _ = submenu("View", [
+            item("as Grid", "viewGrid", "1"),
+            item("as List", "viewList", "2"),
+            .separator(),
+            item("Show or Hide Details", "toggleInspector", "i", [.command, .option]),
+            .separator(),
+            item("Choose Masks…", "masks", "m", [.command, .shift]),
         ])
         let window = submenu("Window", [
             NSMenuItem(title: "Minimize", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m"),

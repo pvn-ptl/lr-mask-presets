@@ -35,15 +35,25 @@ const P = {
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
   sparkle: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
-  lightroom: '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 7.5v9h4.5M14.5 16.5v-5.5M14.5 12.5c.5-1.3 1.6-2 3-2"/>',
+  // Apps are drawn as generic things (a cloud, a display, a camera), never as anyone's app icon or lettermark.
+  "cloud-photos": '<path d="M7 19h10.2a4 4 0 0 0 .5-7.96 6 6 0 0 0-11.5-.84A4.4 4.4 0 0 0 7 19z"/><path d="M8.6 16.6l2.6-2.9 2 2 1.6-1.5 2.4 2.4"/>',
   reveal: '<path d="M14 4h6v6"/><path d="M20 4l-8.5 8.5"/><path d="M18 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6h.01"/>',
   refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4.5V11h-6.5"/>',
   download: '<path d="M12 4v11M7 10.5l5 5 5-5"/><path d="M4.5 20h15"/>',
   stack: '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5" opacity=".6"/>',
   warning: '<path d="M12 4l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.3h.01"/>',
-  lrc: '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M7.5 7.5v9h4M16.5 10a3 3 0 1 0 0 4.2"/>',
-  ps: '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M7.5 16.5v-9h2.8a2.4 2.4 0 0 1 0 4.8H7.5M17 10.5c-.4-.6-1.1-1-1.9-1-1 0-1.6.5-1.6 1.2 0 1.8 3.7 1 3.7 3.1 0 .8-.8 1.4-1.9 1.4-.9 0-1.7-.4-2.1-1.1"/>',
+  "desktop-photos": '<rect x="3" y="4" width="18" height="12.5" rx="2"/><path d="M9 20.5h6M12 16.5v4"/><path d="M6.5 13.5l3.2-3.3 2.3 2.3 2-1.8 3.5 2.8"/><circle cx="15.8" cy="8.2" r="1.1"/>',
+  grid: '<rect x="4" y="4" width="7" height="7" rx="1.8"/><rect x="13" y="4" width="7" height="7" rx="1.8"/><rect x="4" y="13" width="7" height="7" rx="1.8"/><rect x="13" y="13" width="7" height="7" rx="1.8"/>',
+  list: '<path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.8" cy="6.5" r=".9" fill="currentColor"/><circle cx="4.8" cy="12" r=".9" fill="currentColor"/><circle cx="4.8" cy="17.5" r=".9" fill="currentColor"/>',
+  sidebar: '<rect x="3" y="4.5" width="18" height="15" rx="3"/><path d="M9.5 4.5v15"/><path d="M5.6 8.3h1.6M5.6 11h1.6" opacity=".7"/>',
+  inspector: '<rect x="3" y="4.5" width="18" height="15" rx="3"/><path d="M14.5 4.5v15"/><path d="M16.8 8.3h1.6M16.8 11h1.6" opacity=".7"/>',
+  down: '<path d="M7 10l5 5 5-5"/>',
+  up: '<path d="M7 14l5-5 5 5"/>',
+  ellipsis: '<circle cx="6" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18" cy="12" r="1.3" fill="currentColor"/>',
+  masks: '<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M3.5 15.5c3-2.8 5.6-4 8.5-4s5.5 1.2 8.5 4"/><circle cx="12" cy="8" r="2.4"/>',
+  group: '<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><path d="M8 9.5h8M8 13h5"/>',
+  camera: '<path d="M4 9a2 2 0 0 1 2-2h2.2l1.5-2.2h4.6L15.8 7H18a2 2 0 0 1 2 2v8.2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.8" r="3.6"/>',
 };
 
 export function icon(name, size = 18) {

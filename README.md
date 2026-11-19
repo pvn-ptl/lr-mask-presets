@@ -7,7 +7,7 @@ Put any Lightroom preset on <b>just the background</b>, or just the subject, the
 A small Mac app that rebuilds a preset's look inside a Lightroom AI mask and saves it as a new preset.
 </p>
 
-<p align="center"><img src="docs/demo.gif" width="880" alt="Picking a preset, choosing Background, Sky and Skin, and creating the new presets"></p>
+<p align="center"><img src="docs/demo.gif" width="880" alt="Picking a preset, choosing Sky and Skin in the mask picker, selecting two more presets, switching to the list view and creating the new presets"></p>
 
 ## Why
 
@@ -29,7 +29,7 @@ other preset.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshot-dark.png">
-  <img src="docs/screenshot-light.png" alt="The app: presets on the left, what carries over in the middle, masks and options on the right">
+  <img src="docs/screenshot-light.png" alt="The app: sources and groups in the sidebar, the presets as a grid or list in the middle, what carries over on the right, and a floating bar with the chosen masks and the Create button">
 </picture>
 
 ## Install
@@ -44,10 +44,16 @@ Needs macOS 13 or later, on Apple silicon or Intel. If you'd rather build it you
 
 ## Use it
 
-1. **Pick presets.** The app lists the presets it found (see [where it looks](#where-it-looks)). Click one to see
-   what carries over. Tick several presets, or a whole group, to do them all at once. You can also drag presets,
-   folders or `.zip` packs onto the window.
-2. **Choose where the look goes.** Pick one or more masks. Each preset × each mask becomes one new preset.
+1. **Pick presets.** Your presets appear as a library, grouped like in Lightroom (see [where it looks](#where-it-looks)).
+   Each one gets a small colour swatch drawn from its own settings, so you can tell looks apart at a glance. Switch
+   between the grid and a sortable list with the buttons in the toolbar (or ⌘1 and ⌘2). Click a preset to see what
+   carries over. ⌘-click, ⇧-click or the round checkboxes select several, and **Select All** takes a whole group.
+   You can also drag presets, folders or `.zip` packs onto the window.
+2. **Choose where the look goes.** Click **Masks…** in the floating bar and pick one or more. Each preset × each
+   mask becomes one new preset.
+
+<p align="center"><img src="docs/masks-dark.png" width="760" alt="The mask picker: Scene, People and Landscape masks, with Background, Sky and Skin picked"></p>
+
 3. **Create.** The new presets are saved as `.xmp` files and as one `.zip`, in `~/Pictures/LR Mask Presets`
    (you can change this in Settings).
 4. **Import them into Lightroom** once. The app shows you how when it's done:
