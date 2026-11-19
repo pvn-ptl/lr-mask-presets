@@ -1,0 +1,49 @@
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="LR Mask Presets samples">
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about=""
+    xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/"
+   crs:PresetType="Normal"
+   crs:UUID="81939256F98DBE17E55951B08452279C"
+   crs:Version="18.0"
+   crs:ProcessVersion="15.4"
+   crs:Exposure2012="+0.10"
+   crs:Contrast2012="+20"
+   crs:Highlights2012="-40"
+   crs:Shadows2012="+30"
+   crs:Whites2012="+14"
+   crs:Blacks2012="-12"
+   crs:Texture="+18"
+   crs:Clarity2012="+16"
+   crs:Dehaze="+14"
+   crs:Vibrance="+22"
+   crs:ColorGradeGlobalHue="214"
+   crs:ColorGradeGlobalSat="6"
+   crs:IncrementalTemperature="-6"
+   crs:HasSettings="True">
+   <crs:Name>
+    <rdf:Alt>
+     <rdf:li xml:lang="x-default">Crisp Alpine</rdf:li>
+    </rdf:Alt>
+   </crs:Name>
+   <crs:Group>
+    <rdf:Alt>
+     <rdf:li xml:lang="x-default">Sample Mono &amp; Outdoors</rdf:li>
+    </rdf:Alt>
+   </crs:Group>
+   <crs:ToneCurvePV2012Red>
+    <rdf:Seq>
+     <rdf:li>0, 0</rdf:li>
+     <rdf:li>128, 122</rdf:li>
+     <rdf:li>255, 255</rdf:li>
+    </rdf:Seq>
+   </crs:ToneCurvePV2012Red>
+   <crs:ToneCurvePV2012Blue>
+    <rdf:Seq>
+     <rdf:li>0, 6</rdf:li>
+     <rdf:li>128, 134</rdf:li>
+     <rdf:li>255, 255</rdf:li>
+    </rdf:Seq>
+   </crs:ToneCurvePV2012Blue>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>

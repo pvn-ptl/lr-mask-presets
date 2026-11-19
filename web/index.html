@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>LR Mask Presets</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<header class="toolbar">
+  <div class="brand">
+    <img class="logo" src="favicon.svg" alt="" width="28" height="28">
+    <div class="brand-text">
+      <h1>LR Mask Presets</h1>
+      <p>Put any Lightroom preset on just the background, the subject, people, sky…</p>
+    </div>
+  </div>
+  <label class="search">
+    <span class="search-icon" data-icon="search"></span>
+    <input id="search" type="search" placeholder="Search presets and groups" autocomplete="off" spellcheck="false" aria-label="Search presets">
+    <kbd class="hint-key" aria-hidden="true">⌘F</kbd>
+  </label>
+  <div class="toolbar-actions">
+    <button class="button" id="addFolder"><span data-icon="folder"></span><span>Add folder</span></button>
+    <button class="button" id="addFiles"><span data-icon="file"></span><span>Add files</span></button>
+    <button class="icon-button" id="openSettings" aria-label="Settings" title="Settings"><span data-icon="gear"></span></button>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="library" aria-label="Your presets">
+    <nav class="sources" id="sources" aria-label="Preset sources"></nav>
+    <div class="list-tools" id="listTools"></div>
+    <div class="list" id="list" role="listbox" aria-multiselectable="true" tabindex="0"></div>
+  </aside>
+
+  <div class="workspace">
+    <section class="detail" id="detail" aria-live="polite"></section>
+    <aside class="create" id="create" aria-label="Create presets"></aside>
+  </div>
+</main>
+
+<div class="drop-overlay" id="dropOverlay" aria-hidden="true">
+  <div><span data-icon="download"></span><strong>Drop presets to add them</strong><span>.xmp, .lrtemplate, .zip packs or whole folders</span></div>
+</div>
+<dialog id="dialog"></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="loading" id="loading"><div class="spinner"></div><span id="loadingText">Looking for your presets…</span></div>
+</body>
+</html>
