@@ -83,7 +83,7 @@ export function buildPreset(preset, conv, targetId = "background", { group, name
 
   const description = `${t.label}-only version of “${preset.name}”${strength === 1 ? "" : ` at ${Math.round(strength * 100)}%`} (${MARKER})`;
   const out = [
-    '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="LR Mask Presets">',
+    '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Partly">',
     ' <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">',
     '  <rdf:Description rdf:about=""',
     '    xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/"',

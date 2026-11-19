@@ -51,7 +51,7 @@ test("reads deflated entries, with and without data descriptors", async () => {
 });
 
 test("reads zips made by macOS tools (ditto, zip)", { skip: process.platform !== "darwin" && "macOS only" }, async () => {
-  const dir = mkdtempSync(join(tmpdir(), "lrmask-zip-"));
+  const dir = mkdtempSync(join(tmpdir(), "partly-zip-"));
   try {
     mkdirSync(join(dir, "Pack/Sub"), { recursive: true });
     writeFileSync(join(dir, "Pack/One.xmp"), "<one/>".repeat(200));

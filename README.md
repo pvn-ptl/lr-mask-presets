@@ -1,13 +1,15 @@
 <p align="center"><img src="docs/icon.png" width="112" alt=""></p>
 
-<h1 align="center">LR Mask Presets</h1>
+<h1 align="center">Partly</h1>
+
+<p align="center"><b>Preset to Mask Converter for Lightroom</b></p>
 
 <p align="center">
-Put any Lightroom preset on <b>just the background</b>, or just the subject, the sky, people's skin, the water…<br>
-A small Mac app that rebuilds a preset's look inside a Lightroom AI mask and saves it as a new preset.
+Convert any Lightroom preset into a <b>mask preset</b>: the same look on <b>just the background</b>, or just the subject,<br>
+the sky, people's skin, the water… A free Mac app for Lightroom, Lightroom Classic and Camera Raw.
 </p>
 
-<p align="center"><a href="https://github.com/pvn-ptl/lr-mask-presets/releases/latest/download/LR-Mask-Presets.dmg"><b>⬇ Download for Mac</b></a> (.dmg) · macOS 13 or later · Apple silicon and Intel · <a href="#install">How to install</a></p>
+<p align="center"><a href="https://github.com/pvn-ptl/partly-lightroom-preset-converter/releases/latest/download/Partly.dmg"><b>⬇ Download Partly for Mac</b></a> (.dmg) · macOS 13 or later · Apple silicon and Intel · <a href="#install">How to install</a></p>
 
 <p align="center"><img src="docs/demo.gif" width="880" alt="Picking a preset, choosing Sky and Skin in the mask picker, selecting two more presets, switching to the list view and creating the new presets"></p>
 
@@ -16,7 +18,7 @@ A small Mac app that rebuilds a preset's look inside a Lightroom AI mask and sav
 Lightroom presets change the whole photo. Often you want the look only behind your subject, or only on the sky.
 Doing that by hand means adding a mask and copying every slider into it, for every preset you own.
 
-LR Mask Presets does the copying. It takes the presets you already have and writes new ones that carry the same
+Partly does the copying: it's a converter for the presets you already have. It takes the presets you already have and writes new ones that carry the same
 look inside an AI mask such as **Select Background**. Apply one in Lightroom and it detects the background (or sky,
 skin, water…) on that photo and puts the look only there. The new presets sync to your other devices like any
 other preset.
@@ -36,8 +38,8 @@ other preset.
 
 ## Install
 
-1. Download **[LR-Mask-Presets.dmg](https://github.com/pvn-ptl/lr-mask-presets/releases/latest/download/LR-Mask-Presets.dmg)** (always the latest version) and open it.
-2. In the window that opens, drag **LR Mask Presets** onto the **Applications** folder beside it. Then eject the
+1. Download **[Partly.dmg](https://github.com/pvn-ptl/partly-lightroom-preset-converter/releases/latest/download/Partly.dmg)** (always the latest version) and open it.
+2. In the window that opens, drag **Partly** onto the **Applications** folder beside it. Then eject the
    disk image.
 3. Open the app from Applications. The first time, macOS will say it can't check the app for malicious software,
    because the app isn't notarized by Apple. Click **Done**, then go to **System Settings › Privacy & Security**,
@@ -45,7 +47,7 @@ other preset.
    **Open**.) You only do this once.
 
 Needs macOS 13 or later, on Apple silicon or Intel. Every [release](../../releases) lists the SHA-256 of its
-files, so you can check your download with `shasum -a 256 ~/Downloads/LR-Mask-Presets.dmg`. There's also a
+files, so you can check your download with `shasum -a 256 ~/Downloads/Partly.dmg`. There's also a
 `.zip` of the app on each release, and you can build it yourself: see [Development](#development).
 
 ## Use it
@@ -66,7 +68,7 @@ files, so you can check your download with `shasum -a 256 ~/Downloads/LR-Mask-Pr
 
 <p align="center"><img src="docs/masks-dark.png" width="760" alt="The mask picker: Scene, People and Landscape masks with Background, Sky and Skin picked, then Combine Masks and the Amount inside the mask"></p>
 
-3. **Create.** The new presets are saved as `.xmp` files and as one `.zip`, in `~/Pictures/LR Mask Presets`
+3. **Create.** The new presets are saved as `.xmp` files and as one `.zip`, in `~/Pictures/Partly`
    (you can change this in Settings). The clock button in the toolbar lists your **Recent Exports**: show one in
    Finder, or **Export Again** with the same presets, masks and options (handy after you've edited a preset in
    Lightroom).
@@ -143,7 +145,7 @@ Lightroom show up without pressing **Look for Presets Again**.
 ## Privacy
 
 Everything happens on your Mac. The app makes no network requests, and the only files it writes are the new
-presets: in your output folder, plus `CameraRaw/Settings/LR Mask Presets` if you click **Install for Classic &
+presets: in your output folder, plus `CameraRaw/Settings/Partly` if you click **Install for Classic &
 Camera Raw**.
 
 ## Other ways to run it
@@ -155,10 +157,10 @@ files, or a drop), and the result downloads as a `.zip`. No install, no build st
 **From the command line:**
 
 ```sh
-node cli/lrmask.mjs ~/Downloads/MyPresetPack.zip --mask background,sky --out ~/Desktop/masked
-node cli/lrmask.mjs MyLook.xmp --mask "subject +water -hair" --amount 50
-node cli/lrmask.mjs "$HOME/Library/Application Support/Adobe/CameraRaw/Settings" --dry-run   # see what carries over
-node cli/lrmask.mjs --list-masks
+node cli/partly.mjs ~/Downloads/MyPresetPack.zip --mask background,sky --out ~/Desktop/masked
+node cli/partly.mjs MyLook.xmp --mask "subject +water -hair" --amount 50
+node cli/partly.mjs "$HOME/Library/Application Support/Adobe/CameraRaw/Settings" --dry-run   # see what carries over
+node cli/partly.mjs --list-masks
 ```
 
 Other options: `--whole-photo`, `--vibrance`, `--no-parametric`, `--no-grayscale`, `--no-detail`, `--group "{target} · {group}"`.
@@ -192,14 +194,22 @@ scripts/       build, sample presets, icon, docs screenshots, real-library smoke
 | Task | Command |
 | --- | --- |
 | Run the tests | `npm test` (Node 20+; the browser tests run when Chrome is installed) |
-| Build the Mac app | `scripts/build-mac-app.sh` → `dist/LR Mask Presets.app`, `dist/LR-Mask-Presets.dmg` and a `.zip` (needs Xcode Command Line Tools) |
-| Check the built app | `"dist/LR Mask Presets.app/Contents/MacOS/LR Mask Presets" --selftest` |
+| Build the Mac app | `scripts/build-mac-app.sh` → `dist/Partly.app`, `dist/Partly.dmg` and a `.zip` (needs Xcode Command Line Tools) |
+| Check the built app | `dist/Partly.app/Contents/MacOS/Partly --selftest` |
 | Check the disk image | `scripts/verify-dmg.sh` (mounts it read-only, checks the app, runs the self-test from the image) |
-| Publish a release | `gh release create vX.Y.Z dist/LR-Mask-Presets.dmg dist/LR-Mask-Presets-X.Y.Z-macOS.zip`; keep the `.dmg` name so the download link above always gets the latest |
+| Publish a release | `gh release create vX.Y.Z dist/Partly.dmg dist/Partly-X.Y.Z-macOS.zip`; keep the `.dmg` name so the download link above always gets the latest |
 | Check against your own presets | `node scripts/smoke-real.mjs` (read-only: converts every preset to every mask in memory) |
 | Regenerate screenshots & GIF | `PYTHON=/path/to/python-with-Pillow node scripts/capture-docs.mjs` |
 
 The sample presets in `web/samples` are original looks made for this project (`node scripts/make-samples.mjs`).
+
+Partly was called LR Mask Presets in version 1.0.0. The first time Partly runs, it moves that version's settings and
+folders over to the new name, and still recognises the presets it made back then.
+
+## License and security
+
+Partly is free and open source under the [MIT License](LICENSE). To report a security problem privately, see the
+[Security Policy](SECURITY.md).
 
 ---
 

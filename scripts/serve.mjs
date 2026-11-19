@@ -38,5 +38,5 @@ export function serve(port = 0, routes = {}) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const server = await serve(Number(process.argv[2]) || 8765);
-  console.log(`LR Mask Presets (web) at http://127.0.0.1:${server.address().port}/`);
+  console.log(`Partly (web) at http://127.0.0.1:${server.address().port}/`);
 }

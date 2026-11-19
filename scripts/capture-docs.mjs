@@ -22,7 +22,7 @@ if (location.pathname === "/index.html") {
     const names = await (await fetch("samples/index.json")).json();
     return Promise.all(names.map(async (n) => ({ path: n, text: await (await fetch("samples/" + n)).text() })));
   };
-  const out = "/Users/you/Pictures/LR Mask Presets";
+  const out = "/Users/you/Pictures/Partly";
   const answers = {
     getSettings: () => ({}),
     scan: async () => ({
@@ -187,7 +187,7 @@ const server = await serve(0, routes);
 const base = `http://127.0.0.1:${server.address().port}/`;
 const page = await launch({ width: W, height: H, scale: 2 });
 await page.send("Page.addScriptToEvaluateOnNewDocument", { source: BRIDGE });
-const work = mkdtempSync(join(tmpdir(), "lrmask-docs-"));
+const work = mkdtempSync(join(tmpdir(), "partly-docs-"));
 try {
   await stills(page, base);
   const frames = await demo(page, base, work);

@@ -28,7 +28,7 @@ async function open(query = "demo") {
 
 test("starts with a welcome screen and no errors", { skip }, async () => {
   await open("");
-  assert.match(await page.eval("document.querySelector('#list').textContent"), /Turn any Lightroom preset/);
+  assert.match(await page.eval("document.querySelector('#list').textContent"), /Convert any Lightroom preset into a mask preset/);
   await page.click("#list .found button:nth-child(3)"); // Try sample presets
   await page.waitFor("app.state.entries.length === 8");
   assert.deepEqual(page.errors, []);

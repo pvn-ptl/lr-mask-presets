@@ -2,12 +2,12 @@
 # Check the disk image the way someone who downloads it gets it: mount it read-only, check what's inside (the app, its
 # signature, both architectures, the version, the Applications shortcut), run the app's self-test from the image,
 # and detach. Also reports what Gatekeeper will say about it on another Mac.
-#   scripts/verify-dmg.sh [dist/LR-Mask-Presets.dmg]
+#   scripts/verify-dmg.sh [dist/Partly.dmg]
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-DMG="${1:-dist/LR-Mask-Presets.dmg}"
-NAME="LR Mask Presets"
+DMG="${1:-dist/Partly.dmg}"
+NAME="Partly"
 VERSION=$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' package.json | head -1)
 fail() { echo "FAIL: $*" >&2; exit 1; }
 
@@ -15,7 +15,7 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 hdiutil verify -quiet "$DMG" || fail "the image's checksum doesn't verify"
 [[ "$(hdiutil imageinfo "$DMG" | sed -n 's/^Format: //p')" == "UDZO" ]] || fail "not a compressed read-only image"
 
-MNT=$(mktemp -d "${TMPDIR:-/tmp}/lrmask-verify.XXXXXX")
+MNT=$(mktemp -d "${TMPDIR:-/tmp}/partly-verify.XXXXXX")
 cleanup() { hdiutil detach -quiet "$MNT" 2>/dev/null || hdiutil detach -quiet -force "$MNT" 2>/dev/null || true; rmdir "$MNT" 2>/dev/null || true; }
 trap cleanup EXIT
 hdiutil attach -quiet -readonly -nobrowse -noautoopen -mountpoint "$MNT" "$DMG"

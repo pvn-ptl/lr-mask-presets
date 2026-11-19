@@ -136,7 +136,7 @@ test("the appearance switch flips the scheme, says what it will do, and is remem
   const says = `switch to ${before} appearance`;
   assert.equal((await page.eval("document.querySelector('#toggleTheme').getAttribute('aria-label')")).toLowerCase(), says);
   assert.equal((await page.eval("document.querySelector('#toggleTheme').title")).toLowerCase(), says);
-  assert.equal(await page.eval("JSON.parse(localStorage.getItem('lr-mask-presets:settings')).theme"), after);
+  assert.equal(await page.eval("JSON.parse(localStorage.getItem('partly:settings')).theme"), after);
   await open("demo");
   assert.equal(await page.eval("document.documentElement.dataset.scheme"), after, "survives a restart");
   await page.eval("localStorage.clear()");
