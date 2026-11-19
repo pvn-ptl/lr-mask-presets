@@ -9,7 +9,9 @@ export const RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 export const MAX_PRESET_BYTES = 5 * 1024 * 1024;
 
 // Written into every preset this app makes, so they can be told apart once Lightroom syncs them back.
-export const MARKER = "made with LR Mask Presets";
+export const MARKER = "made with Partly";
+// What presets made by version 1.0.0 (then called LR Mask Presets) say instead.
+const EARLIER_MARKERS = ["made with LR Mask Presets"];
 
 const CURVE_KEYS = new Set(["ToneCurvePV2012", "ToneCurvePV2012Red", "ToneCurvePV2012Green", "ToneCurvePV2012Blue"]);
 
@@ -90,7 +92,7 @@ export function num(preset, key, fallback = 0) {
 }
 
 export function isConverted(preset) {
-  return preset.description.includes(MARKER);
+  return [MARKER, ...EARLIER_MARKERS].some((marker) => preset.description.includes(marker));
 }
 
 /** Profiles ("Look") and defaults files aren't presets; photo sidecars (no type) are allowed. */

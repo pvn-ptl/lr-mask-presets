@@ -396,7 +396,7 @@ function renderToolbar() {
   const src = state.filter === "all" ? null : state.sources.find((s) => s.key === state.filter);
   const title = state.group || src?.label || "All Presets";
   $("viewTitle").textContent = title;
-  document.title = state.entries.length ? `${title} – LR Mask Presets` : "LR Mask Presets";
+  document.title = state.entries.length ? `${title} – Partly` : "Partly: Preset to Mask Converter for Lightroom";
   const total = scopeEntries().length;
   const parts = [];
   if (!state.entries.length) parts.push("No presets yet");
@@ -539,7 +539,7 @@ function welcome() {
   return h("div", { class: "welcome" },
     h("div", { class: "drop-target" },
       h("div", { class: "halo" }, icon("masks", 32)),
-      h("h2", { text: native ? "Let's find your presets" : "Turn any Lightroom preset into a masked preset" }),
+      h("h2", { text: native ? "Let's find your presets" : "Convert any Lightroom preset into a mask preset" }),
       h("p", { text: native
         ? "No Lightroom presets turned up in the usual places on this Mac. Choose a folder of presets, drop a preset pack on this window, or try the samples."
         : "Pick a preset and where it should go: background, subject, sky, people, skin, water and more. You get a new preset that applies the look inside an AI mask. Everything happens on your computer; nothing is uploaded." }),
@@ -1666,11 +1666,11 @@ function showSettings(tab = "sources") {
     }),
     about: () => ({
       body: h("div", { class: "settings-list about" },
-        h("p", null, h("b", { text: "LR Mask Presets" }), document.documentElement.dataset.version ? ` ${document.documentElement.dataset.version}` : ""),
+        h("p", null, h("b", { text: "Partly" }), document.documentElement.dataset.version ? ` ${document.documentElement.dataset.version}` : "", h("br"), h("span", { class: "muted", text: "Preset to mask converter for Lightroom, Lightroom Classic and Camera Raw" })),
         h("p", { class: "muted", text: "Turns Lightroom presets into presets that apply the look inside an AI mask: background, subject, sky, people, landscape parts and more." }),
         h("p", { class: "muted", text: "Private by design: presets are read on this computer and never uploaded. The app makes no network requests. It only reads Lightroom's folders; it never changes them." }),
         h("p", { class: "muted", text: "Not made by or affiliated with Adobe. Lightroom is a trademark of Adobe." })),
-      start: [h("button", { class: "link", text: "Project page on GitHub", onclick: () => platform.openURL("https://github.com/pvn-ptl/lr-mask-presets") })],
+      start: [h("button", { class: "link", text: "Project page on GitHub", onclick: () => platform.openURL("https://github.com/pvn-ptl/partly-lightroom-preset-converter") })],
     }),
   };
   const page = pages[tab]();

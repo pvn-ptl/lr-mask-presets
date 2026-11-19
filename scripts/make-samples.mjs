@@ -28,7 +28,7 @@ const index = [];
 for (const s of SAMPLES) {
   const settings = { ProcessVersion: "15.4", ...s.settings, ...(s.param || {}), ...(s.curve ? { ToneCurveName2012: "Custom" } : {}) };
   const xmp = [
-    '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="LR Mask Presets samples">',
+    '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Partly samples">',
     ' <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">',
     '  <rdf:Description rdf:about=""',
     '    xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/"',

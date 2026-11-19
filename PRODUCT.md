@@ -14,7 +14,7 @@ behind the subject, on the sky, on skin. Primary users are the owner and the pho
 
 ## Product Purpose
 
-LR Mask Presets turns presets the photographer already owns into new presets that apply the same look only inside a
+Partly, a preset to mask converter for Lightroom, turns presets the photographer already owns into new presets that apply the same look only inside a
 Lightroom AI mask. Success is going from "I want this look only on the background" to a set of new presets imported
 into Lightroom in a minute or two, while trusting what carried over.
 
@@ -37,7 +37,7 @@ approximately, to the whole photo, or not at all.
 
 - macOS 13 or later, Apple silicon and Intel. One Swift file plus the web interface; no dependencies.
 - Entirely local: no network requests. Lightroom's own files are only ever read. The app writes only to its output
-  folder and, on request, `~/Library/Application Support/Adobe/CameraRaw/Settings/LR Mask Presets`.
+  folder and, on request, `~/Library/Application Support/Adobe/CameraRaw/Settings/Partly` (or `LR Mask Presets`, where 1.0.0 installed them).
 - 24 masks in three families (scene, people, landscape). Each setting is reported as Exact, Approximate, Whole photo
   or Not in mask.
 - Accepts `.xmp`, `.lrtemplate`, `.zip` packs and folders, by picker or drag and drop.
@@ -46,7 +46,7 @@ approximately, to the whole photo, or not at all.
 
 ## Brand Commitments
 
-- Name: LR Mask Presets.
+- Name: Partly (1.0.0 was called LR Mask Presets). Described as "Preset to Mask Converter for Lightroom": the words people search, with Lightroom only in the descriptor.
 - The user's own words for the look, binding: "make this look like apple built the app with all kinds of blur and
   glass effects also with amazing animations".
 

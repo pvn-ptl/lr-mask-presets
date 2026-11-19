@@ -1,4 +1,4 @@
-// LR Mask Presets for macOS: a native window around the web UI in web/.
+// Partly (preset to mask converter for Lightroom) for macOS: a native window around the web UI in web/.
 // Swift finds presets on disk, shows open/save panels and writes files; the page does the converting.
 //
 // Modes for development (see scripts/build-mac-app.sh):
@@ -76,12 +76,18 @@ struct Places {
     var cameraRawUser: URL { home.appendingPathComponent("Library/Application Support/Adobe/CameraRaw/Settings") }
     var classicTemplates: URL { home.appendingPathComponent("Library/Application Support/Adobe/Lightroom/Develop Presets") }
     var cameraRawSystem: URL { systemLibrary.appendingPathComponent("Application Support/Adobe/CameraRaw/Settings") }
-    var installFolder: URL { cameraRawUser.appendingPathComponent("LR Mask Presets") }
+    // Version 1.0.0 was called LR Mask Presets. Keep using its folders where they exist, so presets already installed
+    // aren't duplicated in a second folder and new exports land next to the earlier ones.
+    var installFolder: URL { earlier(cameraRawUser, "LR Mask Presets") ?? cameraRawUser.appendingPathComponent("Partly") }
+    private func earlier(_ parent: URL, _ name: String) -> URL? {
+        let url = parent.appendingPathComponent(name)
+        return FileManager.default.fileExists(atPath: url.path) ? url : nil
+    }
 
     var outputFolder: URL {
         get {
             if let path = defaults.string(forKey: "outputFolder"), !path.isEmpty { return URL(fileURLWithPath: path) }
-            return home.appendingPathComponent("Pictures/LR Mask Presets")
+            return earlier(home, "Pictures/LR Mask Presets") ?? home.appendingPathComponent("Pictures/Partly")
         }
         nonmutating set { defaults.set(newValue.path, forKey: "outputFolder") }
     }
@@ -627,7 +633,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         // as tall as the page's own toolbar, so the traffic lights sit in the sidebar the way they do in Finder.
         window = NSWindow(contentRect: NSRect(origin: .zero, size: options.size),
                           styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView], backing: .buffered, defer: false)
-        window.title = "LR Mask Presets"
+        window.title = "Partly"
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.titlebarSeparatorStyle = .none
@@ -718,7 +724,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
     }
 
     @objc func openProjectPage(_ sender: Any?) {
-        NSWorkspace.shared.open(URL(string: "https://github.com/pvn-ptl/lr-mask-presets")!)
+        NSWorkspace.shared.open(URL(string: "https://github.com/pvn-ptl/partly-lightroom-preset-converter")!)
     }
 
     // MARK: Menus
@@ -741,12 +747,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
             return menu
         }
 
-        let quit = NSMenuItem(title: "Quit LR Mask Presets", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-        let hide = NSMenuItem(title: "Hide LR Mask Presets", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        let quit = NSMenuItem(title: "Quit Partly", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        let hide = NSMenuItem(title: "Hide Partly", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
         let hideOthers = NSMenuItem(title: "Hide Others", action: #selector(NSApplication.hideOtherApplications(_:)), keyEquivalent: "h")
         hideOthers.keyEquivalentModifierMask = [.command, .option]
-        _ = submenu("LR Mask Presets", [
-            NSMenuItem(title: "About LR Mask Presets", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: ""),
+        _ = submenu("Partly", [
+            NSMenuItem(title: "About Partly", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: ""),
             .separator(),
             item("Settings…", "settings", ","),
             .separator(),
@@ -800,7 +806,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
                 return full
             }(),
         ])
-        let help = NSMenuItem(title: "LR Mask Presets on GitHub", action: #selector(openProjectPage(_:)), keyEquivalent: "")
+        let help = NSMenuItem(title: "Partly on GitHub", action: #selector(openProjectPage(_:)), keyEquivalent: "")
         help.target = self
         let helpMenu = submenu("Help", [help])
         NSApp.mainMenu = main

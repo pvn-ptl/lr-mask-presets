@@ -1,4 +1,4 @@
-/* LR Mask Presets: a Mac window in macOS's own materials. Dark is the default; light follows the system or Settings. */
+/* Partly: a Mac window in macOS's own materials. Dark is the default; light follows the system or Settings. */
 
 :root {
   --content: #1c1c1e; --elevated: #252528; --raised: #2c2c30; --tile: #262629; --sidebar-fill: #232326;
@@ -190,6 +190,7 @@ html.settled .app { transition: grid-template-columns .45s var(--spring-soft); }
 .sidebar-top { height: calc(var(--band) - var(--gap)); flex: none; display: flex; align-items: center; padding: 0 14px; }
 .app-mark { display: flex; align-items: center; gap: 9px; font-weight: 650; font-size: 13px; color: var(--label); white-space: nowrap; overflow: hidden; }
 .app-mark img { flex: none; border-radius: 6px; }
+.app-mark small { font-size: 11px; font-weight: 500; color: var(--label-2); overflow: hidden; text-overflow: ellipsis; }
 html.native .app-mark { display: none; } /* the traffic lights live here */
 
 .sidebar-scroll { position: relative; flex: 1; min-height: 0; overflow: auto; padding: 4px 10px 14px; }

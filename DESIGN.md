@@ -1,5 +1,5 @@
 ---
-name: LR Mask Presets
+name: Partly
 description: A Mac library window of frosted panels over a living dusk-sky canvas, that turns Lightroom presets into masked presets.
 colors:
   accent: "#0a84ff"
@@ -238,13 +238,13 @@ components:
     padding: "0 10px"
 ---
 
-# Design System: LR Mask Presets
+# Design System: Partly
 
 ## Overview
 
 **Creative North Star: "The Window Apple Would Have Shipped"**
 
-LR Mask Presets is one Mac window that reads like Photos or Finder: a floating sidebar of sources and groups, a library browsed as a grid of swatch tiles or a sortable list, an inspector on the right, and a floating glass bar at the bottom that holds the one primary action, Create. It is built from macOS's own materials rather than a web dashboard's boxes: frosted panels over a living canvas (a dusk sky of soft colour fields that leans toward the pointer), Liquid Glass capsules (blur, saturation, a specular top edge, a soft drop shadow) for everything that floats over content, system colours for meaning, SF Pro for text and SF Pro Rounded for the numbers that matter.
+Partly is one Mac window that reads like Photos or Finder: a floating sidebar of sources and groups, a library browsed as a grid of swatch tiles or a sortable list, an inspector on the right, and a floating glass bar at the bottom that holds the one primary action, Create. It is built from macOS's own materials rather than a web dashboard's boxes: frosted panels over a living canvas (a dusk sky of soft colour fields that leans toward the pointer), Liquid Glass capsules (blur, saturation, a specular top edge, a soft drop shadow) for everything that floats over content, system colours for meaning, SF Pro for text and SF Pro Rounded for the numbers that matter.
 
 Density is a desktop app's density, not a web page's: 13px body text, 30px controls, 8px insets, a 52px title band shared with the traffic lights. Colour is almost entirely neutral. The system blue marks selection and the primary action; green, orange, purple and gray say how a setting carries over and nothing else. The only rich colour on screen is the presets themselves, each drawn as a computed swatch: one made-up alpine lake at golden hour (sky and clouds, snowy peaks, a treeline, a cabin, a jetty, a meadow, a rock and a hiker) pushed through that preset's own settings. Every part of that scene is also a mask region, so the inspector can show the look only where the chosen mask is, which is what an export really does.
 

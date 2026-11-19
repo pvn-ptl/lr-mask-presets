@@ -22,7 +22,7 @@ if (location.pathname === "/index.html") {
     const names = await (await fetch("samples/index.json")).json();
     return Promise.all(names.map(async (n) => ({ path: n, text: await (await fetch("samples/" + n)).text() })));
   };
-  const out = "/Users/you/Pictures/LR Mask Presets";
+  const out = "/Users/you/Pictures/Partly";
   const answers = {
     getSettings: () => ({}),
     scan: async () => ({

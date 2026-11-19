@@ -55,9 +55,10 @@ test("clear errors for things that aren't presets", () => {
   assert.throws(() => parsePreset("x".repeat(6 * 1024 * 1024)), PresetError);
 });
 
-test("presets made by this app are recognised", () => {
-  const made = parsePreset(xmp({ Contrast2012: "+5" }, { extra: '<crs:Description><rdf:Alt><rdf:li xml:lang="x-default">Background-only version of “X” (made with LR Mask Presets)</rdf:li></rdf:Alt></crs:Description>' }));
-  assert.equal(isConverted(made), true);
+test("presets made by this app are recognised, including those made before it was renamed", () => {
+  const madeBy = (name) => parsePreset(xmp({ Contrast2012: "+5" }, { extra: `<crs:Description><rdf:Alt><rdf:li xml:lang="x-default">Background-only version of “X” (made with ${name})</rdf:li></rdf:Alt></crs:Description>` }));
+  assert.equal(isConverted(madeBy("Partly")), true);
+  assert.equal(isConverted(madeBy("LR Mask Presets")), true, "1.0.0 presets");
   assert.equal(isConverted(load("full_look.xmp")), false);
 });
 

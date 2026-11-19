@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build "LR Mask Presets.app" (universal: Apple silicon + Intel) into dist/, plus a disk image and a .zip to share.
+# Build "Partly.app" (universal: Apple silicon + Intel) into dist/, plus a disk image and a .zip to share.
 # Needs only the Xcode Command Line Tools (xcode-select --install).
 #   scripts/build-mac-app.sh            release build
 #   scripts/build-mac-app.sh --debug    debug build (Web Inspector enabled)
@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 
 VERSION=$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' package.json | head -1)
 BUILD=$(git rev-list --count HEAD 2>/dev/null || echo 1)
-NAME="LR Mask Presets"
+NAME="Partly"
 APP="dist/$NAME.app"
 FLAGS=(-O)
 if [[ "${1:-}" == "--debug" ]]; then FLAGS=(-Onone -g -D DEBUG); fi
@@ -36,13 +36,13 @@ done)
 codesign --force --sign - --timestamp=none "$APP"
 codesign --verify --strict "$APP"
 
-ZIP="dist/LR-Mask-Presets-$VERSION-macOS.zip"
+ZIP="dist/Partly-$VERSION-macOS.zip"
 rm -f "$ZIP"
 ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
 
 # The disk image people download: the app beside a shortcut to Applications, to drag it across, with the app's icon
 # on the volume. Its name doesn't change between versions, so the README can link to the latest release's copy.
-DMG="dist/LR-Mask-Presets.dmg"
+DMG="dist/Partly.dmg"
 STAGE=build/dmg
 RW=build/dmg-rw.dmg
 rm -rf "$STAGE" "$RW" "$DMG"

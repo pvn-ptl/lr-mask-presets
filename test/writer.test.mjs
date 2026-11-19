@@ -18,7 +18,7 @@ test("background preset: one correction with Lightroom's Select Background mask"
   assert.equal(out.top.ProcessVersion, "15.4");
   assert.equal(out.name, "Moody & Warm");
   assert.equal(out.group, "Background · Test Looks");
-  assert.match(out.description, /made with LR Mask Presets/);
+  assert.match(out.description, /made with Partly/);
   assert.equal(out.corrections.length, 1);
   const [c] = out.corrections;
   assert.equal(c.values.What, "Correction");
