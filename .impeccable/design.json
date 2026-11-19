@@ -1,0 +1,942 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-19T08:34:13+00:00",
+  "title": "Design System: LR Mask Presets",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "System Blue",
+        "canonical": "oklch(62.4% 0.206 255)",
+        "tonalRamp": [
+          "#000a20",
+          "#00244f",
+          "#004084",
+          "#105fb6",
+          "#017ff8",
+          "#67a7fa",
+          "#a6ccff",
+          "#e5f0fe"
+        ]
+      },
+      "accent-light": {
+        "role": "primary",
+        "displayName": "System Blue (light)",
+        "canonical": "oklch(60.3% 0.218 257)",
+        "tonalRamp": [
+          "#000a21",
+          "#002252",
+          "#003e89",
+          "#005cc4",
+          "#0a7cff",
+          "#6da6f9",
+          "#a9cbfe",
+          "#e5efff"
+        ]
+      },
+      "accent-text": {
+        "role": "primary",
+        "displayName": "Link Blue",
+        "canonical": "oklch(68.5% 0.170 253)",
+        "tonalRamp": [
+          "#010b1c",
+          "#042548",
+          "#0b4279",
+          "#1562ad",
+          "#2583e3",
+          "#63a8f7",
+          "#a4cdfd",
+          "#e4f0ff"
+        ]
+      },
+      "accent-text-light": {
+        "role": "primary",
+        "displayName": "Link Blue (light)",
+        "canonical": "oklch(52.2% 0.177 256)",
+        "tonalRamp": [
+          "#010b1d",
+          "#06244a",
+          "#10417c",
+          "#1c60b1",
+          "#2d81e8",
+          "#66a7fc",
+          "#a8ccfb",
+          "#e5f0fe"
+        ]
+      },
+      "accent-fill": {
+        "role": "primary",
+        "displayName": "Action Blue",
+        "canonical": "oklch(56.3% 0.193 256)",
+        "tonalRamp": [
+          "#010b1f",
+          "#03244d",
+          "#084081",
+          "#115fb9",
+          "#1f7ff1",
+          "#67a7fc",
+          "#a9ccfc",
+          "#e5f0fe"
+        ]
+      },
+      "accent-fill-hover": {
+        "role": "primary",
+        "displayName": "Action Blue, pressed",
+        "canonical": "oklch(52.2% 0.187 257)",
+        "tonalRamp": [
+          "#010a1e",
+          "#06244c",
+          "#10407f",
+          "#1c5eb6",
+          "#2c7fee",
+          "#6ba6fa",
+          "#a8ccfe",
+          "#e5effe"
+        ]
+      },
+      "status-exact": {
+        "role": "secondary",
+        "displayName": "Exact Green",
+        "canonical": "oklch(75.6% 0.208 147)",
+        "tonalRamp": [
+          "#001001",
+          "#012e0b",
+          "#02511a",
+          "#047629",
+          "#159d3c",
+          "#50c063",
+          "#90e098",
+          "#c9ffcd"
+        ]
+      },
+      "status-exact-light": {
+        "role": "secondary",
+        "displayName": "Exact Green (light)",
+        "canonical": "oklch(73.0% 0.194 147)",
+        "tonalRamp": [
+          "#001001",
+          "#002f0b",
+          "#005119",
+          "#15752f",
+          "#069d3c",
+          "#57bf6a",
+          "#93de9d",
+          "#cbfed0"
+        ]
+      },
+      "status-exact-ink-light": {
+        "role": "secondary",
+        "displayName": "Exact Green ink (light)",
+        "canonical": "oklch(51.1% 0.134 147)",
+        "tonalRamp": [
+          "#030f04",
+          "#0e2d13",
+          "#1d4e26",
+          "#2e723b",
+          "#429752",
+          "#76b77e",
+          "#a6d8ab",
+          "#d7f9da"
+        ]
+      },
+      "status-approx": {
+        "role": "secondary",
+        "displayName": "Approximate Orange",
+        "canonical": "oklch(78.2% 0.171 67)",
+        "tonalRamp": [
+          "#170700",
+          "#381e00",
+          "#5f3800",
+          "#8a5300",
+          "#b67009",
+          "#dd9238",
+          "#f7bc7e",
+          "#feebd7"
+        ]
+      },
+      "status-approx-light": {
+        "role": "secondary",
+        "displayName": "Approximate Orange (light)",
+        "canonical": "oklch(76.5% 0.175 63)",
+        "tonalRamp": [
+          "#170600",
+          "#3b1c00",
+          "#613601",
+          "#8d5002",
+          "#ba6d0f",
+          "#e28f3a",
+          "#fbba7f",
+          "#ffead9"
+        ]
+      },
+      "status-approx-ink-light": {
+        "role": "secondary",
+        "displayName": "Approximate Orange ink (light)",
+        "canonical": "oklch(52.1% 0.165 39)",
+        "tonalRamp": [
+          "#190501",
+          "#411506",
+          "#6e2910",
+          "#9e3f1b",
+          "#d0582b",
+          "#ea8664",
+          "#feb59c",
+          "#ffe9e2"
+        ]
+      },
+      "status-global": {
+        "role": "secondary",
+        "displayName": "Whole-photo Purple",
+        "canonical": "oklch(74.3% 0.172 307)",
+        "tonalRamp": [
+          "#100619",
+          "#2f1941",
+          "#522f6e",
+          "#77479e",
+          "#9e61d0",
+          "#bc8ce7",
+          "#dbb7fe",
+          "#f4eafe"
+        ]
+      },
+      "status-global-ink": {
+        "role": "secondary",
+        "displayName": "Whole-photo Purple ink",
+        "canonical": "oklch(78.0% 0.147 308)",
+        "tonalRamp": [
+          "#100717",
+          "#2e1b3d",
+          "#503267",
+          "#754c95",
+          "#9b67c4",
+          "#ba90dd",
+          "#dabaf6",
+          "#f4eafe"
+        ]
+      },
+      "status-global-light": {
+        "role": "secondary",
+        "displayName": "Whole-photo Purple (light)",
+        "canonical": "oklch(61.5% 0.213 312)",
+        "tonalRamp": [
+          "#13041b",
+          "#341345",
+          "#5a2574",
+          "#8239a7",
+          "#ac50da",
+          "#c982f0",
+          "#e2b4fd",
+          "#f6e9ff"
+        ]
+      },
+      "status-global-ink-light": {
+        "role": "secondary",
+        "displayName": "Whole-photo Purple ink (light)",
+        "canonical": "oklch(51.9% 0.166 313)",
+        "tonalRamp": [
+          "#110617",
+          "#31183e",
+          "#552e69",
+          "#7c4697",
+          "#a460c7",
+          "#c28be0",
+          "#e0b6f8",
+          "#f6e9ff"
+        ]
+      },
+      "status-lost": {
+        "role": "secondary",
+        "displayName": "Not-in-mask Gray",
+        "canonical": "oklch(68.1% 0.007 286)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252527",
+          "#424244",
+          "#616164",
+          "#828286",
+          "#a4a4a9",
+          "#c9c9cc",
+          "#eeeef0"
+        ]
+      },
+      "status-lost-ink": {
+        "role": "secondary",
+        "displayName": "Not-in-mask Gray ink",
+        "canonical": "oklch(71.1% 0.007 286)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252527",
+          "#424244",
+          "#616164",
+          "#828286",
+          "#a4a4a8",
+          "#c9c9cc",
+          "#eeeef0"
+        ]
+      },
+      "status-lost-light": {
+        "role": "secondary",
+        "displayName": "Not-in-mask Gray (light)",
+        "canonical": "oklch(75.2% 0.006 286)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#424244",
+          "#616164",
+          "#828286",
+          "#a5a5a8",
+          "#c9c9cb",
+          "#eeeef0"
+        ]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Danger Red",
+        "canonical": "oklch(70.7% 0.185 26)",
+        "tonalRamp": [
+          "#1b0303",
+          "#45100e",
+          "#74211e",
+          "#a63330",
+          "#da4944",
+          "#f37d73",
+          "#fdb4ac",
+          "#fee9e6"
+        ]
+      },
+      "danger-fill": {
+        "role": "tertiary",
+        "displayName": "Danger Red fill",
+        "canonical": "oklch(54.2% 0.186 27)",
+        "tonalRamp": [
+          "#1b0302",
+          "#45100d",
+          "#74211c",
+          "#a6332c",
+          "#da4940",
+          "#f47d70",
+          "#fdb4aa",
+          "#fee9e6"
+        ]
+      },
+      "danger-light": {
+        "role": "tertiary",
+        "displayName": "Danger Red (light)",
+        "canonical": "oklch(55.3% 0.225 27)",
+        "tonalRamp": [
+          "#1e0101",
+          "#4a0606",
+          "#7d1010",
+          "#b31b1c",
+          "#ea2d2c",
+          "#fc766a",
+          "#ffb3a9",
+          "#ffe9e6"
+        ]
+      },
+      "content": {
+        "role": "neutral",
+        "displayName": "Window Graphite",
+        "canonical": "oklch(22.7% 0.004 286)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#424243",
+          "#616163",
+          "#828284",
+          "#a5a5a7",
+          "#c9c9ca",
+          "#eeeeef"
+        ]
+      },
+      "elevated": {
+        "role": "neutral",
+        "displayName": "Elevated Graphite",
+        "canonical": "oklch(26.6% 0.006 286)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#424244",
+          "#616164",
+          "#828285",
+          "#a5a5a8",
+          "#c9c9cb",
+          "#eeeef0"
+        ]
+      },
+      "raised": {
+        "role": "neutral",
+        "displayName": "Raised Graphite",
+        "canonical": "oklch(29.5% 0.007 286)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252527",
+          "#424244",
+          "#616164",
+          "#828286",
+          "#a4a4a8",
+          "#c9c9cc",
+          "#eeeef0"
+        ]
+      },
+      "tile": {
+        "role": "neutral",
+        "displayName": "Tile Graphite",
+        "canonical": "oklch(27.0% 0.005 286)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#424244",
+          "#616164",
+          "#828285",
+          "#a5a5a8",
+          "#c9c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sidebar-fill": {
+        "role": "neutral",
+        "displayName": "Sidebar Graphite",
+        "canonical": "oklch(25.7% 0.006 286)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#424244",
+          "#616164",
+          "#828285",
+          "#a5a5a8",
+          "#c9c9cb",
+          "#eeeef0"
+        ]
+      },
+      "content-light": {
+        "role": "neutral",
+        "displayName": "Window White",
+        "canonical": "oklch(100.0% 0.000 90)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "elevated-light": {
+        "role": "neutral",
+        "displayName": "Elevated Mist",
+        "canonical": "oklch(97.1% 0.003 286)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#424243",
+          "#616162",
+          "#828284",
+          "#a5a5a6",
+          "#c9c9ca",
+          "#eeeeef"
+        ]
+      },
+      "raised-light": {
+        "role": "neutral",
+        "displayName": "Raised Mist",
+        "canonical": "oklch(94.4% 0.005 286)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#424244",
+          "#616164",
+          "#828285",
+          "#a5a5a8",
+          "#c9c9cb",
+          "#eeeef0"
+        ]
+      },
+      "tile-light": {
+        "role": "neutral",
+        "displayName": "Tile Mist",
+        "canonical": "oklch(96.2% 0.003 286)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#424243",
+          "#616162",
+          "#828284",
+          "#a5a5a6",
+          "#c9c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sidebar-fill-light": {
+        "role": "neutral",
+        "displayName": "Sidebar Mist",
+        "canonical": "oklch(94.1% 0.005 286)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#424244",
+          "#616164",
+          "#828285",
+          "#a5a5a8",
+          "#c9c9cb",
+          "#eeeef0"
+        ]
+      },
+      "label-2-light": {
+        "role": "neutral",
+        "displayName": "Secondary Label (light)",
+        "canonical": "oklch(47.4% 0.011 286)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252527",
+          "#414146",
+          "#606166",
+          "#818189",
+          "#a4a4aa",
+          "#c8c8cd",
+          "#eeeef1"
+        ]
+      },
+      "label-3-light": {
+        "role": "neutral",
+        "displayName": "Tertiary Label (light)",
+        "canonical": "oklch(54.0% 0.008 286)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252527",
+          "#424244",
+          "#616165",
+          "#828287",
+          "#a4a4a9",
+          "#c9c9cc",
+          "#eeeef0"
+        ]
+      },
+      "on-accent": {
+        "role": "neutral",
+        "displayName": "On Accent White",
+        "canonical": "oklch(100.0% 0.000 90)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "label": {
+        "role": "neutral",
+        "displayName": "Primary Label"
+      },
+      "label-2": {
+        "role": "neutral",
+        "displayName": "Secondary Label"
+      },
+      "label-3": {
+        "role": "neutral",
+        "displayName": "Tertiary Label"
+      },
+      "label-light": {
+        "role": "neutral",
+        "displayName": "Primary Label (light)"
+      },
+      "separator": {
+        "role": "neutral",
+        "displayName": "Separator"
+      },
+      "separator-strong": {
+        "role": "neutral",
+        "displayName": "Strong Separator"
+      },
+      "separator-light": {
+        "role": "neutral",
+        "displayName": "Separator (light)"
+      },
+      "separator-strong-light": {
+        "role": "neutral",
+        "displayName": "Strong Separator (light)"
+      },
+      "fill": {
+        "role": "neutral",
+        "displayName": "Fill"
+      },
+      "fill-2": {
+        "role": "neutral",
+        "displayName": "Fill 2"
+      },
+      "fill-3": {
+        "role": "neutral",
+        "displayName": "Fill 3"
+      },
+      "fill-light": {
+        "role": "neutral",
+        "displayName": "Fill (light)"
+      },
+      "fill-2-light": {
+        "role": "neutral",
+        "displayName": "Fill 2 (light)"
+      },
+      "fill-3-light": {
+        "role": "neutral",
+        "displayName": "Fill 3 (light)"
+      },
+      "glass": {
+        "role": "neutral",
+        "displayName": "Glass"
+      },
+      "glass-strong": {
+        "role": "neutral",
+        "displayName": "Strong Glass"
+      },
+      "glass-edge": {
+        "role": "neutral",
+        "displayName": "Glass Edge"
+      },
+      "glass-hi": {
+        "role": "neutral",
+        "displayName": "Glass Specular"
+      },
+      "glass-light": {
+        "role": "neutral",
+        "displayName": "Glass (light)"
+      },
+      "glass-strong-light": {
+        "role": "neutral",
+        "displayName": "Strong Glass (light)"
+      },
+      "glass-edge-light": {
+        "role": "neutral",
+        "displayName": "Glass Edge (light)"
+      },
+      "glass-hi-light": {
+        "role": "neutral",
+        "displayName": "Glass Specular (light)"
+      }
+    },
+    "typographyMeta": {
+      "display-numeral": {
+        "displayName": "Display numeral",
+        "purpose": "The inspector's carry-over percentage; counts up to its value."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "First-run drop target only."
+      },
+      "title-large": {
+        "displayName": "Title large",
+        "purpose": "Preset name in the inspector."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Window title, grid group headings, popover titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default UI text."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Subtitles, counts, setting deltas, footnotes."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Sidebar sections, inspector section titles, status pills; sentence case."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "File paths in sheets."
+      }
+    },
+    "materials": [
+      {
+        "name": "glass",
+        "value": "background: var(--glass); backdrop-filter: blur(26px) saturate(185%); border: 1px solid var(--glass-edge); box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-hi)",
+        "purpose": "Liquid Glass for floating controls, bars, popovers, sheets, toasts. Opaque (elevated) under Reduce Transparency."
+      },
+      {
+        "name": "native-vibrancy",
+        "value": "NSVisualEffectView material .sidebar, blendingMode .behindWindow, behind a transparent WKWebView",
+        "purpose": "Real behind-window vibrancy under the sidebar in the Mac app (html.native); browser uses sidebar-fill."
+      },
+      {
+        "name": "scroll-edge",
+        "value": "backdrop-filter: blur(14px) saturate(160%) with a fading content-colour gradient and mask",
+        "purpose": "Toolbar edge once content scrolls under it."
+      },
+      {
+        "name": "lit",
+        "value": "radial-gradient(180px circle at pointer, rgba(255,255,255,.16), transparent 70%)",
+        "purpose": "Pointer-following light on the selection bar and Masks button."
+      }
+    ],
+    "shadows": [
+      {
+        "name": "glass-shadow",
+        "value": "0 18px 50px rgba(0,0,0,.42), 0 3px 10px rgba(0,0,0,.25)",
+        "purpose": "Floating glass (dark). Light: 0 18px 48px rgba(20,20,50,.16), 0 2px 8px rgba(20,20,50,.08)."
+      },
+      {
+        "name": "panel-shadow",
+        "value": "0 10px 30px rgba(0,0,0,.28), 0 1px 3px rgba(0,0,0,.25)",
+        "purpose": "Sidebar and inspector (dark). Light: 0 8px 26px rgba(20,20,50,.09), 0 1px 2px rgba(20,20,50,.08)."
+      },
+      {
+        "name": "control",
+        "value": "inset 0 1px 0 var(--glass-hi), 0 2px 8px rgba(0,0,0,.12)",
+        "purpose": "Toolbar capsules and tools."
+      },
+      {
+        "name": "tile-lift",
+        "value": "0 0 0 1px var(--separator) inset, 0 10px 24px rgba(0,0,0,.22)",
+        "purpose": "Tile hover with a 2px rise."
+      },
+      {
+        "name": "sheet",
+        "value": "0 30px 80px rgba(0,0,0,.4), inset 0 1px 0 var(--glass-hi)",
+        "purpose": "Modal sheets."
+      },
+      {
+        "name": "focus-ring",
+        "value": "outline: 3px solid var(--accent-ring); outline-offset: 1px",
+        "purpose": "Keyboard focus everywhere; tiles use a 3px ring plus 6px accent-soft halo."
+      }
+    ],
+    "motion": [
+      {
+        "name": "spring",
+        "value": "linear(0, 0.05 3.6%, 0.17 7.1%, 0.322 10.7%, 0.48 14.3%, 0.628 17.9%, 0.755 21.4%, 0.858 25%, 0.936 28.6%, 0.99 32.1%, 1.025 35.7%, 1.045 39.3%, 1.053 42.9%, 1.054 46.4%, 1.049 50%, 1.033 57.1%, 1.017 64.3%, 1.005 71.4%, 0.999 78.6%, 0.997 85.7%, 0.998 96.4%, 1)",
+        "fallback": "cubic-bezier(.22, 1.18, .36, 1)",
+        "purpose": "Apple-style spring (~5% overshoot) for presses, chips, popovers, ticks, the view-switch thumb. Deliberate overshoot, pinned by the user."
+      },
+      {
+        "name": "spring-soft",
+        "value": "linear(0, 0.035 3.6%, 0.12 7.1%, 0.232 10.7%, 0.353 14.3%, 0.471 17.9%, 0.581 21.4%, 0.678 25%, 0.76 28.6%, 0.827 32.1%, 0.882 35.7%, 0.923 39.3%, 0.955 42.9%, 0.978 46.4%, 0.994 50%, 1.004 53.6%, 1.011 57.1%, 1.015 64.3%, 1.012 75%, 1.007 85.7%, 1.003 96.4%, 1)",
+        "fallback": "cubic-bezier(.2, 1.02, .3, 1)",
+        "purpose": "Larger travel: panel columns, sheets, selection bar arrival, search width, view-transition groups, meter reflow."
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Fades in, inspector swap-in, curve draw, number roll."
+      },
+      {
+        "name": "ease-in",
+        "value": "cubic-bezier(.5, 0, .9, .4)",
+        "purpose": "Exits: popover out .16s, sheet out .18s, inspector swap-out .12s, toast out .2s."
+      },
+      {
+        "name": "view-transition-morph",
+        "value": "group .5s spring-soft; old/new cross-fade .22s; root .18s ease-out",
+        "purpose": "Grid/List morph: each .tile-face and row swatch carries a view-transition-name and flies to its new place."
+      },
+      {
+        "name": "count-up",
+        "value": "rAF, ease-out cubic, 520ms first reveal / 360ms between presets, clamped to its range",
+        "purpose": "Carry-over percentage counts to its value."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "travel off; popovers, sheets and inspector swaps cross-fade (.1-.2s); transitions limited to opacity and colour",
+        "purpose": "Reduce Motion keeps fades only."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-panels",
+        "value": "1240px"
+      },
+      {
+        "name": "inspector-overlay",
+        "value": "980px"
+      },
+      {
+        "name": "sidebar-overlay",
+        "value": "760px"
+      },
+      {
+        "name": "phone",
+        "value": "480px"
+      },
+      {
+        "name": "container:list-mid",
+        "value": "860px"
+      },
+      {
+        "name": "container:bar-chips",
+        "value": "780px"
+      },
+      {
+        "name": "container:bar-masks",
+        "value": "720px"
+      },
+      {
+        "name": "container:list-narrow",
+        "value": "560px"
+      },
+      {
+        "name": "container:bar-summary",
+        "value": "520px"
+      },
+      {
+        "name": "native-min-window",
+        "value": "980x620"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Default pill button for secondary actions.",
+      "html": "<button class=\"ds-btn\">Show in Finder</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 13px; border-radius: 99px; border: 1px solid var(--separator-strong); background: var(--fill-2); color: var(--label); font: 500 13px var(--font); transition: background .15s, transform .25s var(--spring); } .ds-btn:hover { background: var(--fill-3); } .ds-btn:active { transform: scale(.96); transition-duration: .08s; } .ds-btn:focus-visible { outline: 3px solid var(--accent-ring); outline-offset: 1px; }"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one primary action (Create, Done), white on Action Blue.",
+      "html": "<button class=\"ds-btn-primary\">Create 6 Presets</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; height: 40px; padding: 0 20px; border-radius: 99px; border: 0; background: var(--accent-fill); color: #fff; font: 600 13.5px var(--font); box-shadow: 0 1px 0 rgba(255,255,255,.22) inset, 0 3px 10px rgba(0,0,0,.22); transition: background .15s, transform .25s var(--spring); } .ds-btn-primary:hover { background: var(--accent-fill-hover); } .ds-btn-primary:active { transform: scale(.96); transition-duration: .08s; } .ds-btn-primary:focus-visible { outline: 3px solid var(--accent-ring); outline-offset: 1px; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "search-field",
+      "description": "Glass capsule search that widens on focus.",
+      "html": "<label class=\"ds-search\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"M15.5 15.5L21 21\"/></svg><input type=\"search\" placeholder=\"Search\"></label>",
+      "css": ".ds-search { display: flex; align-items: center; gap: 6px; height: 34px; width: 200px; padding: 0 12px 0 10px; border-radius: 99px; color: var(--label-2); background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-hi); transition: width .45s var(--spring-soft), box-shadow .2s; } .ds-search:focus-within { width: 260px; box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 0 3px var(--accent-ring); } .ds-search input { flex: 1; min-width: 0; border: 0; background: none; outline: none; color: var(--label); font: 13px var(--font); } .ds-search input::placeholder { color: var(--label-3); }"
+    },
+    {
+      "name": "View Switch",
+      "kind": "nav",
+      "refersTo": "toolbar-capsule",
+      "description": "Glass capsule with a spring thumb between Grid and List.",
+      "html": "<div class=\"ds-switch\" data-view=\"grid\"><button aria-checked=\"true\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"4\" y=\"4\" width=\"7\" height=\"7\" rx=\"1.8\"/><rect x=\"13\" y=\"4\" width=\"7\" height=\"7\" rx=\"1.8\"/><rect x=\"4\" y=\"13\" width=\"7\" height=\"7\" rx=\"1.8\"/><rect x=\"13\" y=\"13\" width=\"7\" height=\"7\" rx=\"1.8\"/></svg></button><button aria-checked=\"false\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 6.5h11M9 12h11M9 17.5h11\"/></svg></button><span class=\"ds-thumb\"></span></div>",
+      "css": ".ds-switch { position: relative; display: inline-flex; height: 34px; padding: 2px; border-radius: 99px; background: var(--glass); border: 1px solid var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-hi), 0 2px 8px rgba(0,0,0,.12); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); } .ds-switch button { position: relative; z-index: 1; display: grid; place-items: center; width: 34px; height: 28px; border: 0; border-radius: 99px; background: none; color: var(--label-2); } .ds-switch button[aria-checked=true] { color: var(--label); } .ds-switch button:hover { background: var(--fill-2); } .ds-switch button:focus-visible { outline: 3px solid var(--accent-ring); } .ds-thumb { position: absolute; top: 2px; left: 2px; width: 34px; height: 28px; border-radius: 99px; background: var(--fill-3); box-shadow: inset 0 1px 0 var(--glass-hi), 0 1px 3px rgba(0,0,0,.18); transition: transform .45s var(--spring); } .ds-switch:hover .ds-thumb { transform: translateX(34px); }"
+    },
+    {
+      "name": "Mask Chip",
+      "kind": "chip",
+      "refersTo": "mask-chip",
+      "description": "A picked mask in the selection bar, removable.",
+      "html": "<span class=\"ds-chip\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7.2 18.5h9.6a4 4 0 0 0 .6-7.95 6 6 0 0 0-11.5-.9A4.4 4.4 0 0 0 7.2 18.5z\"/></svg>Sky<button aria-label=\"Remove\"><svg viewBox=\"0 0 24 24\" width=\"12\" height=\"12\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 6l12 12M18 6L6 18\"/></svg></button></span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 5px 0 10px; border-radius: 99px; background: var(--accent-soft); color: var(--label); font: 520 13px var(--font); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent); } .ds-chip > svg { color: var(--accent-text); } .ds-chip button { width: 20px; height: 20px; border-radius: 50%; border: 0; background: none; display: grid; place-items: center; color: var(--label-2); padding: 0; } .ds-chip button:hover { background: var(--fill-3); color: var(--label); } .ds-chip button:focus-visible { outline: 3px solid var(--accent-ring); }"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "refersTo": "status-pill",
+      "description": "How a setting carries over: Exact, Approximate, Whole photo, Not in mask.",
+      "html": "<span class=\"ds-status ds-exact\">Exact</span> <span class=\"ds-status ds-approx\">Approximate</span> <span class=\"ds-status ds-global\">Whole photo</span> <span class=\"ds-status ds-lost\">Not in mask</span>",
+      "css": ".ds-status { display: inline-flex; align-items: center; gap: 5px; padding: 2px 7px; border-radius: 6px; font: 650 11px var(--font); white-space: nowrap; } .ds-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; } .ds-exact { color: var(--exact-ink); background: color-mix(in srgb, var(--exact) 14%, transparent); } .ds-approx { color: var(--approx-ink); background: color-mix(in srgb, var(--approx) 15%, transparent); } .ds-global { color: var(--global-ink); background: color-mix(in srgb, var(--global) 15%, transparent); } .ds-lost { color: var(--lost-ink); background: var(--fill-2); }"
+    },
+    {
+      "name": "Preset Tile",
+      "kind": "card",
+      "refersTo": "preset-tile",
+      "description": "A preset as its computed swatch, name, carry-over caption and mini meter.",
+      "html": "<div class=\"ds-tile\" tabindex=\"0\"><div class=\"ds-face\"></div><div class=\"ds-meta\"><b>Golden Hour Glow</b><span><b>86%</b> carries over</span><i class=\"ds-mini\"><i style=\"flex:12;background:var(--exact)\"></i><i style=\"flex:2;background:var(--global)\"></i></i></div></div>",
+      "css": ".ds-tile { width: 190px; border-radius: 14px; outline: none; font: 13px var(--font); color: var(--label); } .ds-face { aspect-ratio: 16/10; border-radius: 14px; background: linear-gradient(#2c4a7a, #7aa8d8 40%, #e9b98a 55%, #4a5a7a 62%, #3d7a3a 80%, #2a1a10); box-shadow: 0 0 0 1px var(--separator) inset, 0 1px 2px rgba(0,0,0,.12); transition: transform .4s var(--spring), box-shadow .25s; } .ds-tile:hover .ds-face { transform: translateY(-2px); box-shadow: 0 0 0 1px var(--separator) inset, 0 10px 24px rgba(0,0,0,.22); } .ds-tile:focus-visible .ds-face { box-shadow: 0 0 0 3px var(--accent-ring), 0 0 0 6px var(--accent-soft); } .ds-meta { display: grid; gap: 2px; padding: 8px 4px 2px; } .ds-meta b { font-weight: 560; } .ds-meta span { color: var(--label-2); font-size: 11.5px; font-variant-numeric: tabular-nums; } .ds-mini { display: flex; gap: 1.5px; height: 4px; margin-top: 4px; border-radius: 99px; overflow: hidden; background: var(--fill-2); }"
+    },
+    {
+      "name": "Selection Bar",
+      "kind": "custom",
+      "refersTo": "selection-bar",
+      "description": "Floating glass bar holding the selection, mask chips, Masks and Create.",
+      "html": "<div class=\"ds-bar\"><div class=\"ds-sum\"><b>2 Presets</b><a>Select All</a></div><span class=\"ds-div\"></span><span class=\"ds-into\">into</span><span class=\"ds-pill\">Background</span><button class=\"ds-go\">Create 6 Presets</button></div>",
+      "css": ".ds-bar { display: inline-flex; align-items: center; gap: 10px; min-height: 58px; padding: 8px 9px 8px 20px; border-radius: 99px; font: 13px var(--font); color: var(--label); background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-edge); box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-hi); } .ds-sum { display: grid; line-height: 1.2; } .ds-sum b { font-weight: 650; } .ds-sum a { color: var(--accent-text); font-size: 11.5px; font-weight: 500; } .ds-div { width: 1px; align-self: stretch; margin: 6px 2px; background: var(--separator-strong); } .ds-into { color: var(--label-2); font-size: 12px; } .ds-pill { height: 30px; display: inline-flex; align-items: center; padding: 0 10px; border-radius: 99px; background: var(--accent-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent); font-weight: 520; } .ds-go { height: 40px; padding: 0 20px; margin-left: 6px; border: 0; border-radius: 99px; background: var(--accent-fill); color: #fff; font: 600 13.5px var(--font); } .ds-go:hover { background: var(--accent-fill-hover); } .ds-go:focus-visible { outline: 3px solid var(--accent-ring); outline-offset: 1px; }"
+    },
+    {
+      "name": "Mask Target",
+      "kind": "button",
+      "refersTo": "mask-target",
+      "description": "A mask in the picker; pressed state tints blue and shows a tick.",
+      "html": "<button class=\"ds-target\" aria-pressed=\"true\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"8\" r=\"3.6\"/><path d=\"M4.8 20.5c1.3-4.3 4-6.4 7.2-6.4s5.9 2.1 7.2 6.4\"/></svg><span>Subject</span></button>",
+      "css": ".ds-target { display: flex; align-items: center; gap: 8px; width: 180px; min-height: 38px; padding: 4px 8px 4px 10px; border-radius: 11px; border: 1px solid var(--separator); background: var(--fill); color: var(--label); font: 500 13px var(--font); text-align: left; transition: background .15s, border-color .15s, transform .3s var(--spring); } .ds-target svg { color: var(--label-2); } .ds-target:hover { background: var(--fill-2); } .ds-target:active { transform: scale(.96); } .ds-target:focus-visible { outline: 3px solid var(--accent-ring); } .ds-target[aria-pressed=true] { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 60%, transparent); } .ds-target[aria-pressed=true] svg { color: var(--accent-text); }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "nav",
+      "refersTo": "segmented",
+      "description": "Two- or three-way choice with a raised selected segment.",
+      "html": "<div class=\"ds-seg\"><button aria-pressed=\"true\">Leave Out</button><button aria-pressed=\"false\">Whole Photo</button></div>",
+      "css": ".ds-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 2px; border-radius: 10px; background: var(--fill-2); width: 300px; } .ds-seg button { height: 28px; border: 0; border-radius: 8px; background: none; color: var(--label-2); font: 520 13px var(--font); transition: color .2s; } .ds-seg button[aria-pressed=true] { color: var(--label); background: var(--content); box-shadow: 0 1px 3px rgba(0,0,0,.18), 0 0 0 .5px var(--separator); } .ds-seg button:hover { color: var(--label); } .ds-seg button:focus-visible { outline: 3px solid var(--accent-ring); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Window Apple Would Have Shipped",
+    "overview": "**Creative North Star: \"The Window Apple Would Have Shipped\"**\n\nLR Mask Presets is one Mac window that reads like Photos or Finder: a floating sidebar of sources and groups, a library browsed as a grid of swatch tiles or a sortable list, an inspector on the right, and a floating glass bar at the bottom that holds the one primary action, Create. It is built from macOS's own materials rather than a web dashboard's boxes: real behind-window vibrancy in the native app, Liquid Glass capsules (blur, saturation, a specular top edge, a soft drop shadow) for everything that floats over content, system colours for meaning, SF Pro for text and SF Pro Rounded for the numbers that matter.\n\nDensity is a desktop app's density, not a web page's: 13px body text, 30px controls, 8px insets, a 52px title band shared with the traffic lights. Colour is almost entirely neutral. The system blue marks selection and the primary action; green, orange, purple and gray say how a setting carries over and nothing else. The only rich colour on screen is the presets themselves, each drawn as a computed swatch: a synthetic landscape pushed through that preset's own settings.\n\nMotion is part of the material. Things arrive on springs (about 5% overshoot), leave faster on a plain ease-in, and travel only where travel explains something: the List and Grid morph, the sidebar highlight sliding to the current row, popovers growing from their button, the carry-over meter reflowing between presets, the score counting to its value.",
+    "keyCharacteristics": [
+      "Dark by default, light following the system or Settings; every colour token has both variants.",
+      "Glass only on things that float: toolbar capsules, selection bar, popovers, sheets, toasts, the sticky list header.",
+      "One primary action per screen, in system blue, inside the floating bar.",
+      "Every preset is shown as its own computed swatch; every figure is computed from the preset.",
+      "Springs in, quick out; Reduce Motion keeps fades and stops all travel.",
+      "The same page runs in the native WKWebView window and in a plain browser."
+    ],
+    "rules": [
+      {
+        "name": "The System Colour Rule",
+        "body": "Every hue is an Apple system colour with its accessible light-appearance variant. No brand colour, no gradients as decoration; the one gradient fill is the welcome screen's drop halo.",
+        "section": "colors"
+      },
+      {
+        "name": "The Status Means Status Rule",
+        "body": "Green, orange, purple and gray belong to carry-over status. They never decorate, never mark selection, and always appear with a text label (pill, legend) beside the colour.",
+        "section": "colors"
+      },
+      {
+        "name": "The Swatches Are the Colour Rule",
+        "body": "The interface stays neutral so the presets' computed swatches are the richest thing on screen.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Figures Rule",
+        "body": "Every number that can change (counts, percentages, setting deltas, tallies) uses tabular figures so values never jitter as they update.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Headings and labels are sentence case at 11px/650 the way macOS writes them; nothing is set in tracked uppercase.",
+        "section": "typography"
+      },
+      {
+        "name": "The Glass Floats Rule",
+        "body": "Glass is for things that float over content. Content itself (tiles, rows, inspector cards) is never glass.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Opaque Fallback Rule",
+        "body": "Under Reduce Transparency (system setting, or forwarded from macOS as `html.reduce-transparency`) all backdrop filters turn off and glass becomes `elevated`. The design must read fully without blur.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** take every colour from the token set, in both appearances; add a light variant (with an accessible ink) for any new colour.",
+      "**Do** use glass (blur 26px + saturate 185%, `glass-edge` hairline, `glass-hi` top edge, `glass-shadow`) only for floating controls, bars, popovers, sheets and toasts.",
+      "**Do** use `--spring` / `--spring-soft` (linear() springs with about 5% overshoot, cubic-bezier fallbacks) for arrivals and `--ease-in` at 120-180ms for exits.",
+      "**Do** keep fades and stop all travel under Reduce Motion; turn glass opaque under Reduce Transparency; strengthen separators under Increase Contrast.",
+      "**Do** show presets as computed swatches from `swatch.js`, and compute every percentage, count and status from the presets themselves.",
+      "**Do** keep the page working the same in WKWebView (`html.native`, drag regions, forwarded settings) and in a plain browser.",
+      "**Do** draw icons as 24px line drawings at 1.7 stroke in `currentColor`; draw apps as generic objects (a cloud, a display, a camera).",
+      "**Do** use tabular figures for every changing number."
+    ],
+    "donts": [
+      "**Don't** use Adobe's or Lightroom's logos, lettermarks, colours or branding anywhere; this app is not made by or affiliated with Adobe.",
+      "**Don't** show anyone's purchased presets in screenshots or committed assets; samples are synthetic.",
+      "**Don't** invent figures, testimonials or counts; a number on screen is computed or it is not shown.",
+      "**Don't** imply the app writes to Lightroom's own files; they are read-only.",
+      "**Don't** put glass on content (tiles, rows, cards), and don't stack glass on glass.",
+      "**Don't** use the status colours for decoration or selection, or show a status by colour alone.",
+      "**Don't** set labels in tracked uppercase or add kicker lines above titles.",
+      "**Don't** let anything travel or bounce when Reduce Motion is on."
+    ]
+  }
+}

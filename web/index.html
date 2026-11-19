@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>LR Mask Presets</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="sidebar-column" id="sidebarColumn">
+    <aside class="sidebar" id="sidebar" aria-label="Library">
+      <div class="sidebar-top" data-drag>
+        <div class="app-mark"><img src="favicon.svg" alt="" width="22" height="22"><span>LR Mask Presets</span></div>
+      </div>
+      <nav class="sidebar-scroll" id="sources" aria-label="Sources and groups"></nav>
+    </aside>
+  </div>
+
+  <main class="content" id="content">
+    <header class="toolbar" id="toolbar" data-drag>
+      <button class="tool icon-only" id="toggleSidebar" aria-label="Show sidebar" title="Show sidebar" aria-expanded="false"><span data-icon="sidebar"></span></button>
+      <div class="title-block">
+        <h1 id="viewTitle">Presets</h1>
+        <p id="viewSubtitle"></p>
+      </div>
+      <div class="toolbar-actions">
+        <div class="capsule view-switch" role="radiogroup" aria-label="View as">
+          <button role="radio" id="viewGrid" data-view="grid" aria-checked="true" title="View as grid" aria-label="Grid"><span data-icon="grid"></span></button>
+          <button role="radio" id="viewList" data-view="list" aria-checked="false" title="View as list" aria-label="List"><span data-icon="list"></span></button>
+          <span class="thumb" aria-hidden="true"></span>
+        </div>
+        <div class="capsule">
+          <button id="addButton" aria-haspopup="menu" aria-expanded="false" title="Add presets" aria-label="Add presets"><span data-icon="plus"></span></button>
+          <button id="historyButton" aria-haspopup="dialog" aria-expanded="false" title="Recent exports" aria-label="Recent exports" hidden><span data-icon="history"></span></button>
+          <button id="openSettings" title="Settings" aria-label="Settings"><span data-icon="gear"></span></button>
+        </div>
+        <label class="search capsule">
+          <span class="search-icon" data-icon="search"></span>
+          <input id="search" type="search" placeholder="Search" autocomplete="off" spellcheck="false" aria-label="Search presets and groups">
+        </label>
+        <button class="tool icon-only" id="toggleInspector" aria-label="Hide details" title="Hide details" aria-pressed="true"><span data-icon="inspector"></span></button>
+      </div>
+    </header>
+
+    <div class="browser" id="list" role="listbox" aria-multiselectable="true" aria-label="Presets" tabindex="0"></div>
+
+    <div class="bar-dock"><div class="selection-bar glass" id="bar" aria-label="Create presets"></div></div>
+  </main>
+
+  <div class="inspector-column" id="inspectorColumn">
+    <aside class="inspector" id="detail" aria-label="Preset details" aria-live="polite"></aside>
+  </div>
+</div>
+
+<div class="popover glass menu" id="addMenu" role="menu" tabindex="-1" hidden></div>
+<div class="popover glass mask-picker" id="maskPicker" role="dialog" aria-label="Where the look goes" tabindex="-1" hidden></div>
+<div class="popover glass history-pop" id="historyPop" role="dialog" aria-label="Recent exports" tabindex="-1" hidden></div>
+
+<div class="drop-overlay" id="dropOverlay" aria-hidden="true">
+  <div class="drop-card glass"><span class="drop-icon" data-icon="download"></span><strong>Drop presets to add them</strong><span>.xmp, .lrtemplate, .zip packs or whole folders</span></div>
+</div>
+<dialog id="dialog"></dialog>
+<div class="toast glass" id="toast" role="status" aria-live="polite"></div>
+<div class="loading" id="loading"><div class="loading-card glass"><div class="spinner" aria-hidden="true"></div><span id="loadingText">Looking for your presets…</span></div></div>
+</body>
+</html>

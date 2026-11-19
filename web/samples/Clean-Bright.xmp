@@ -1,0 +1,32 @@
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="LR Mask Presets samples">
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about=""
+    xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/"
+   crs:PresetType="Normal"
+   crs:UUID="5D1B10BB0D7ED980BB7FE73230683547"
+   crs:Version="18.0"
+   crs:ProcessVersion="15.4"
+   crs:Exposure2012="+0.45"
+   crs:Contrast2012="-8"
+   crs:Highlights2012="-22"
+   crs:Shadows2012="+35"
+   crs:Whites2012="+18"
+   crs:Blacks2012="+6"
+   crs:Texture="+4"
+   crs:Vibrance="+12"
+   crs:ParametricLights="+10"
+   crs:ParametricDarks="+6"
+   crs:HasSettings="True">
+   <crs:Name>
+    <rdf:Alt>
+     <rdf:li xml:lang="x-default">Clean &amp; Bright</rdf:li>
+    </rdf:Alt>
+   </crs:Name>
+   <crs:Group>
+    <rdf:Alt>
+     <rdf:li xml:lang="x-default">Sample Warm</rdf:li>
+    </rdf:Alt>
+   </crs:Group>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>

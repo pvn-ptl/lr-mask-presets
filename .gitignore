@@ -1,4 +1,6 @@
+# Converted presets and builds stay local
 output/
-__pycache__/
-*.pyc
+dist/
+build/
+node_modules/
 .DS_Store

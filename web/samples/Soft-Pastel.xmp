@@ -1,0 +1,35 @@
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="LR Mask Presets samples">
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about=""
+    xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/"
+   crs:PresetType="Normal"
+   crs:UUID="6080582055BC380CB53B75DA7E642B5E"
+   crs:Version="18.0"
+   crs:ProcessVersion="15.4"
+   crs:Exposure2012="+0.35"
+   crs:Contrast2012="-20"
+   crs:Highlights2012="-15"
+   crs:Shadows2012="+25"
+   crs:Whites2012="+10"
+   crs:Blacks2012="+18"
+   crs:Clarity2012="-10"
+   crs:Texture="-6"
+   crs:Saturation="-8"
+   crs:ColorGradeMidtoneHue="330"
+   crs:ColorGradeMidtoneSat="10"
+   crs:ColorGradeHighlightLum="+6"
+   crs:IncrementalTint="+8"
+   crs:HasSettings="True">
+   <crs:Name>
+    <rdf:Alt>
+     <rdf:li xml:lang="x-default">Soft Pastel</rdf:li>
+    </rdf:Alt>
+   </crs:Name>
+   <crs:Group>
+    <rdf:Alt>
+     <rdf:li xml:lang="x-default">Sample Warm</rdf:li>
+    </rdf:Alt>
+   </crs:Group>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>

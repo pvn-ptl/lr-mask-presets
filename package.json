@@ -1,0 +1,22 @@
+{
+  "name": "lr-mask-presets",
+  "version": "1.0.0",
+  "description": "Turn Lightroom presets into presets that apply the look inside an AI mask (background, subject, sky, people, landscape).",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "lrmask": "cli/lrmask.mjs"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\"",
+    "serve": "node scripts/serve.mjs",
+    "build:mac": "scripts/build-mac-app.sh",
+    "selftest:mac": "\"dist/LR Mask Presets.app/Contents/MacOS/LR Mask Presets\" --selftest",
+    "samples": "node scripts/make-samples.mjs",
+    "icon": "node scripts/make-icon.mjs",
+    "docs": "node scripts/capture-docs.mjs"
+  }
+}
