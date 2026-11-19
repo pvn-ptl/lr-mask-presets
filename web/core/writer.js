@@ -31,11 +31,16 @@ export function groupName(preset, targetId, template = DEFAULT_GROUP_TEMPLATE) {
   return name || label;
 }
 
-/** The new preset's XMP text. `name` defaults to the original preset's name. */
-export function buildPreset(preset, conv, targetId = "background", { group, name } = {}) {
+/**
+ * The new preset's XMP text. `name` defaults to the original preset's name. `amount` (0..1) is the mask's
+ * Amount: how strongly the whole look is applied inside the mask.
+ */
+export function buildPreset(preset, conv, targetId = "background", { group, name, amount = 1 } = {}) {
   const t = getTarget(targetId);
+  const strength = normalAmount(amount);
   // Stable ids: converting the same preset again replaces it in Lightroom instead of duplicating it.
-  const seed = `${preset.uuid || `${preset.group}/${preset.name}`}:${targetId}`;
+  // A lighter version is a different preset, so it gets its own ids.
+  const seed = `${preset.uuid || `${preset.group}/${preset.name}`}:${targetId}${strength === 1 ? "" : `@${Math.round(strength * 100)}`}`;
   const title = name || preset.name;
 
   const header = [
@@ -53,7 +58,7 @@ export function buildPreset(preset, conv, targetId = "background", { group, name
   local.LocalCurveRefineSaturation = 100;
   Object.assign(local, conv.local);
   const correction = [
-    ["What", "Correction"], ["CorrectionAmount", "1"], ["CorrectionActive", "true"],
+    ["What", "Correction"], ["CorrectionAmount", number(strength)], ["CorrectionActive", "true"],
     ["CorrectionName", t.label], ["CorrectionSyncID", stableId(seed, "correction")],
     ...LOCAL_ORDER.map((k) => [k, number(local[k])]),
   ];
@@ -76,7 +81,7 @@ export function buildPreset(preset, conv, targetId = "background", { group, name
     return ["        <rdf:li", attrs.map(([k, v]) => `         crs:${k}="${escapeAttr(v)}"`).join("\n") + "/>"].join("\n");
   });
 
-  const description = `${t.label}-only version of “${preset.name}” (${MARKER})`;
+  const description = `${t.label}-only version of “${preset.name}”${strength === 1 ? "" : ` at ${Math.round(strength * 100)}%`} (${MARKER})`;
   const out = [
     '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="LR Mask Presets">',
     ' <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">',
@@ -114,6 +119,12 @@ export function buildPreset(preset, conv, targetId = "background", { group, name
     "",
   );
   return out.join("\n");
+}
+
+/** An amount between 1% and 100%; anything else (missing, garbage) means full strength. */
+export function normalAmount(amount) {
+  const v = Number(amount);
+  return Number.isFinite(v) && v > 0 && v < 1 ? Math.max(0.01, Math.round(v * 100) / 100) : 1;
 }
 
 // Keys the header already sets; a kept global setting never overrides them.

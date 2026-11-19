@@ -353,7 +353,12 @@ A 16:10 computed swatch with a 14px radius, inner hairline and specular edge; na
 A glass pill docked bottom-centre (58px): selection summary, "into", mask chips (`accent-soft` with a blue inner ring and a close button), Masks… and Create. Rises in on a soft spring; chips pop in; the Create count rolls when it changes.
 
 ### Mask picker popover
-A 600px glass popover grown from the Masks button: three families of 38px mask targets (fill, hairline, icon + label, blue tick when picked), a segmented choice for settings a mask can't hold, and a footer tally ("2 presets × 3 masks = 6 new presets").
+A 600px glass popover grown from the Masks button: three families of 38px mask targets (fill, hairline, icon + label, blue tick when picked), a Combined family, a four-part segmented Amount (100/75/50/25%), a segmented choice for settings a mask can't hold, and a footer tally ("2 presets × 3 masks = 6 new presets at 50%").
+- **Combined targets:** the same 38px target with the shared two-circle icon; a small raised delete badge appears at the top-left corner on hover or focus. The last tile is a dashed "Combine Masks…" target.
+- **Combine page:** a second page in the same popover, pushed in from the right (22px slide + fade on the soft spring) and back from the left. Native `<select>` menus (30px, 8px radius, `content` well, chevron) for Start with / Add / Subtract; chosen masks are mask chips; an `accent-soft` preview card names the result ("Subject + Water − Hair") and says it in words. Escape steps back a page before it closes the popover.
+
+### Recent exports popover
+A 380px glass popover from the toolbar's clock button (which pops in after the first export). Rows: a 32px `accent-soft` tile with the mask icon, the presets ("Moody Teal and 1 other") over "into …" and the time, then reveal and Export Again icon buttons. An export whose file is gone greys its tile and disables reveal.
 
 ### Inspector
 An `elevated` panel: a 16:9 hero swatch with a blurred glow of itself beneath, the name, the rounded display percentage beside a drawn mini curve, an 8px segmented meter with legend, a destination card, and a table of settings each with a status pill. Content swaps by fading the old view out (120ms) and the new one in with a 6px rise (240ms).

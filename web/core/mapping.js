@@ -43,8 +43,13 @@ export const DEFAULT_OPTIONS = Object.freeze({
   parametric: true,    // trace parametric curve sliders as a point curve
   grayscale: true,     // black & white presets -> fully desaturated mask
   vibrance: false,     // fold Vibrance into Saturation at half strength
+  detail: true,        // extra sharpening and luminance noise reduction -> the mask's Sharpness and Noise sliders
   leftovers: "drop",   // what masks can't hold: "drop" it, or keep it on the whole photo ("global")
 });
+
+// Lightroom's default sharpening for raw photos. A mask's Sharpness adds to the photo's own, so only what a
+// preset puts above this can be carried over.
+export const DEFAULT_SHARPNESS = 40;
 
 /**
  * Returns { local, colorGrade, curves, rows, globals, empty, coverage, counts }.
@@ -57,6 +62,7 @@ export function convert(preset, options = {}) {
   saturation(preset, conv, opts);
   toneCurves(preset, conv, opts);
   colorGrading(preset, conv);
+  detail(preset, conv, opts);
   leftovers(preset, conv, opts);
   conv.counts = { exact: 0, approx: 0, lost: 0, global: 0 };
   for (const row of conv.rows) conv.counts[row.status]++;
@@ -144,6 +150,39 @@ function colorGrading(preset, conv) {
   }
   conv.colorGrade.LocalColorGradeBlending = Math.round(num(preset, "ColorGradeBlending", 50));
   conv.colorGrade.LocalColorGradeBalance = Math.round(num(preset, "SplitToningBalance"));
+}
+
+// Sharpening and noise reduction. Masks have their own Sharpness and Noise sliders, which act on top of the
+// photo's: so extra sharpening goes in as the difference from the default, and luminance noise reduction as Noise.
+function detail(preset, conv, opts) {
+  const s = preset.settings;
+  if ("Sharpness" in s) {
+    const amount = num(preset, "Sharpness", DEFAULT_SHARPNESS);
+    const extra = amount - DEFAULT_SHARPNESS;
+    const keys = Object.keys(s).filter((k) => k === "Sharpness" || k.startsWith("Sharpen"));
+    if (extra > 0 && opts.detail) {
+      const stored = clamp(extra / 100);
+      conv.local.LocalSharpness = stored;
+      conv.rows.push(row("Sharpening", String(Math.round(amount)), `${signed(stored * 100)} Sharpness`, APPROX,
+        `A mask's Sharpness adds to the photo's own, so it gets what the preset adds above Lightroom's default of ${DEFAULT_SHARPNESS}`));
+    } else if (extra > 0) {
+      leftover(conv, opts, preset, "Sharpening", String(Math.round(amount)), "Turn on “Sharpening & noise → mask” to approximate it", keys);
+    } else if (extra < 0) {
+      leftover(conv, opts, preset, "Sharpening", String(Math.round(amount)), `A mask can't take sharpening below the default (${DEFAULT_SHARPNESS}) without blurring`, keys);
+    }
+  }
+  const noise = num(preset, "LuminanceSmoothing");
+  if (noise > 0) {
+    const keys = Object.keys(s).filter((k) => k === "LuminanceSmoothing" || k.startsWith("LuminanceNoiseReduction"));
+    if (opts.detail) {
+      const stored = clamp(noise / 100);
+      conv.local.LocalLuminanceNoise = stored;
+      conv.rows.push(row("Noise reduction", String(Math.round(noise)), `${signed(stored * 100)} Noise`, APPROX,
+        "A mask's Noise slider is a local luminance noise reduction; its Detail and Contrast settings aren't kept"));
+    } else {
+      leftover(conv, opts, preset, "Noise reduction", String(Math.round(noise)), "Turn on “Sharpening & noise → mask” to approximate it", keys);
+    }
+  }
 }
 
 function leftovers(preset, conv, opts) {

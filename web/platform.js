@@ -16,6 +16,7 @@ function nativePlatform(handler) {
     removeFolder: (path) => call("removeFolder", { path }),
     save: (batch) => call("save", batch),
     reveal: (path) => call("reveal", { path }),
+    exists: (paths) => call("exists", { paths }),
     openLightroom: () => call("openLightroom"),
     installCameraRaw: (files) => call("installCameraRaw", { files }),
     chooseOutputFolder: () => call("chooseOutputFolder"),

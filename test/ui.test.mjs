@@ -88,6 +88,52 @@ test("creating presets downloads a zip and explains how to import it", { skip },
   assert.deepEqual(page.errors, []);
 });
 
+test("combined masks, a lighter amount and Export Again from Recent Exports", { skip }, async () => {
+  await open();
+  await page.send("Browser.setDownloadBehavior", { behavior: "deny" }).catch(() => {});
+  await page.eval("localStorage.clear(); app.setTargets([]); app.setAmount(1)");
+  await page.click("#masksButton");
+  await page.click("#combineButton");
+  const choose = (kind, value) => page.eval(`(() => { const s = document.querySelector('#maskPicker select[data-kind="${kind}"]'); s.value = '${value}'; s.dispatchEvent(new Event('change')); })()`);
+  assert.equal(await page.eval("document.querySelector('#addCombo').disabled"), true);
+  await choose("add", "water");
+  await choose("subtract", "hair");
+  assert.equal(await page.eval("document.querySelector('.cb-preview b').textContent"), "Subject + Water − Hair");
+  await page.click("#addCombo");
+  assert.equal(await page.eval("[...app.state.targets].join()"), "combo:subject/+water/-hair");
+  assert.equal(await page.eval("document.querySelectorAll('#comboTargets .combo').length"), 1);
+  await page.click('[data-amount="0.5"]');
+  assert.match(await page.eval("document.querySelector('.tally').textContent"), /1 new preset at 50%/);
+  await page.click("#pickerDone");
+  assert.match(await page.eval("document.querySelector('#bar .chip[data-chip]').textContent"), /Subject \+ Water − Hair/);
+  assert.match(await page.eval("document.querySelector('#detail .destination').textContent"), /Subject \+ Water − Hair · Moody › Crisp Alpine \(50%\)|\(50%\)/);
+
+  await page.eval("app.check(['Moody Teal'])");
+  assert.equal((await page.eval("app.create()")).count, 1);
+  await page.eval("document.querySelector('dialog').close()");
+  assert.equal(await page.eval("document.querySelector('#historyButton').hidden"), false);
+  await page.click("#historyButton");
+  await page.waitFor("document.querySelectorAll('#historyPop .hp-row').length === 1");
+  assert.match(await page.eval("document.querySelector('#historyPop .hp-row').textContent"), /Moody Teal.*Subject \+ Water − Hair.*at 50%/s);
+
+  // Export Again uses what was exported then, not what's chosen now.
+  await page.eval("app.setTargets(['sky']); app.setAmount(1); app.check(['Night City', 'Faded Film'])");
+  const again = await page.eval("app.exportAgain(0)");
+  assert.equal(again.count, 1);
+  await page.eval("document.querySelector('dialog').close()");
+  assert.deepEqual(await page.eval("app.state.history.map((h) => [h.names[0], h.amount, h.targets.join()])"),
+    [["Moody Teal", 0.5, "combo:subject/+water/-hair"], ["Moody Teal", 0.5, "combo:subject/+water/-hair"]]);
+
+  // A refresh from disk keeps the selection; everything above survives a restart.
+  await page.eval("app.sourcesChanged()");
+  assert.equal(await page.eval("app.state.checked.size"), 2);
+  await new Promise((r) => setTimeout(r, 400));
+  await open();
+  assert.deepEqual(await page.eval("[app.state.combos.join(), app.state.amount, app.state.history.length]"), ["combo:subject/+water/-hair", 1, 2]);
+  assert.deepEqual(page.errors, []);
+  await page.eval("localStorage.clear()");
+});
+
 test("preset names from files are shown as text, never run as HTML", { skip }, async () => {
   await open();
   const evil = `<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/" crs:PresetType="Normal" crs:Contrast2012="+10"><crs:Name><rdf:Alt><rdf:li xml:lang="x-default">&lt;img src=x onerror="window.pwned=1"&gt;</rdf:li></rdf:Alt></crs:Name><crs:Group><rdf:Alt><rdf:li xml:lang="x-default">&lt;b&gt;bold&lt;/b&gt;</rdf:li></rdf:Alt></crs:Group></rdf:Description></rdf:RDF></x:xmpmeta>`;

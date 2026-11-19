@@ -50,12 +50,18 @@ Needs macOS 13 or later, on Apple silicon or Intel. If you'd rather build it you
    carries over. ⌘-click, ⇧-click or the round checkboxes select several, and **Select All** takes a whole group.
    You can also drag presets, folders or `.zip` packs onto the window.
 2. **Choose where the look goes.** Click **Masks…** in the floating bar and pick one or more. Each preset × each
-   mask becomes one new preset.
+   mask becomes one new preset. Below the masks you can:
+   - **Combine Masks…**: start from one mask, then add or subtract others, like “Subject + Water − Hair”
+     (see [Combined masks](#combined-masks)). Combinations stay in the picker until you delete them.
+   - Set the **Amount inside the mask** (100%, 75%, 50% or 25%) for lighter versions of a look. A lighter
+     version is its own preset, named like “Moody Teal (50%)”, so it sits next to the full one.
 
-<p align="center"><img src="docs/masks-dark.png" width="760" alt="The mask picker: Scene, People and Landscape masks, with Background, Sky and Skin picked"></p>
+<p align="center"><img src="docs/masks-dark.png" width="760" alt="The mask picker: Scene, People and Landscape masks with Background, Sky and Skin picked, then Combine Masks and the Amount inside the mask"></p>
 
 3. **Create.** The new presets are saved as `.xmp` files and as one `.zip`, in `~/Pictures/LR Mask Presets`
-   (you can change this in Settings).
+   (you can change this in Settings). The clock button in the toolbar lists your **Recent Exports**: show one in
+   Finder, or **Export Again** with the same presets, masks and options (handy after you've edited a preset in
+   Lightroom).
 4. **Import them into Lightroom** once. The app shows you how when it's done:
 
 <p align="center"><img src="docs/done-light.png" width="760" alt="The import steps the app shows after creating presets"></p>
@@ -75,8 +81,8 @@ A mask can hold most of what makes a look, but not everything. The app shows thi
 | | Settings |
 | --- | --- |
 | **Exact** | Exposure, Contrast, Highlights, Shadows, Whites, Blacks, Texture, Clarity, Dehaze, Saturation, relative Temp & Tint, the point tone curve, red/green/blue curves, Color Grading (all four wheels, blending, balance) |
-| **Approximate** | Exposure beyond ±4 EV (a mask's limit); parametric curve sliders, traced as points; black & white, as a fully desaturated mask; Vibrance, folded into Saturation if you turn that on |
-| **Whole photo** (optional) | Color Mixer (HSL), profile and creative profile, vignette, grain, calibration, Kelvin white balance. Choose **Whole photo** to keep these on the whole image like the original preset, or **Leave out** so only the masked area changes. |
+| **Approximate** | Exposure beyond ±4 EV (a mask's limit); parametric curve sliders, traced as points; black & white, as a fully desaturated mask; Vibrance, folded into Saturation if you turn that on; sharpening above Lightroom's default (40), as the mask's Sharpness; luminance noise reduction, as the mask's Noise slider (turn off with **Sharpening & noise → mask**) |
+| **Whole photo** (optional) | Color Mixer (HSL), profile and creative profile, vignette, grain, calibration, Kelvin white balance, sharpening below the default. Choose **Whole photo** to keep these on the whole image like the original preset, or **Leave out** so only the masked area changes. |
 | **Not in mask** | Masks the original preset already had, B&W color mix, Point Color |
 
 The numbers are converted the way Lightroom stores them in masks. For example, a preset's Contrast +20 is stored
@@ -100,6 +106,16 @@ Each one is written exactly as Lightroom writes its own Select Background / Subj
 masks. Lightroom works out the actual mask when you apply the preset to a photo, so presets for people or
 landscape parts only change photos where Lightroom finds those things.
 
+### Combined masks
+
+A combination starts from one mask, then adds or subtracts others, the way Lightroom's own **Add** and
+**Subtract** buttons build a mask: (start + everything added) − everything subtracted. For example “Subject +
+Water − Hair”, “Sky + Mountains + Water” or “All people − Clothes”. Up to six masks can be added or subtracted.
+Masks that are already a subtraction (“Background, not sky”) can only be the starting mask.
+
+**Amount** is written as the mask's own Amount, so every slider in the mask keeps its exact value and the whole
+look is scaled together.
+
 ## Where it looks
 
 The app reads (and never writes to) these places:
@@ -113,7 +129,8 @@ The app reads (and never writes to) these places:
 | Folders you add | anything you choose with **Add folder**, searched recursively, including `.zip` packs |
 
 Presets that turn up in more than one place are shown once, and presets made by this app are hidden so they
-aren't converted twice.
+aren't converted twice. While the app is open it watches these folders, so presets you add, change or delete in
+Lightroom show up without pressing **Look for Presets Again**.
 
 ## Privacy
 
@@ -131,11 +148,12 @@ files, or a drop), and the result downloads as a `.zip`. No install, no build st
 
 ```sh
 node cli/lrmask.mjs ~/Downloads/MyPresetPack.zip --mask background,sky --out ~/Desktop/masked
+node cli/lrmask.mjs MyLook.xmp --mask "subject +water -hair" --amount 50
 node cli/lrmask.mjs "$HOME/Library/Application Support/Adobe/CameraRaw/Settings" --dry-run   # see what carries over
 node cli/lrmask.mjs --list-masks
 ```
 
-Other options: `--whole-photo`, `--vibrance`, `--no-parametric`, `--no-grayscale`, `--group "{target} · {group}"`.
+Other options: `--whole-photo`, `--vibrance`, `--no-parametric`, `--no-grayscale`, `--no-detail`, `--group "{target} · {group}"`.
 
 ## Questions
 

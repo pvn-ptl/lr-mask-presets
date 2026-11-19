@@ -49,6 +49,8 @@ const P = {
   sidebar: '<rect x="3" y="4.5" width="18" height="15" rx="3"/><path d="M9.5 4.5v15"/><path d="M5.6 8.3h1.6M5.6 11h1.6" opacity=".7"/>',
   inspector: '<rect x="3" y="4.5" width="18" height="15" rx="3"/><path d="M14.5 4.5v15"/><path d="M16.8 8.3h1.6M16.8 11h1.6" opacity=".7"/>',
   down: '<path d="M7 10l5 5 5-5"/>',
+  combine: '<circle cx="9" cy="12" r="5.6"/><circle cx="15" cy="12" r="5.6"/>',
+  history: '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4 4.5v3.8h3.8"/><path d="M12 8v4.2l2.8 1.8"/>',
   up: '<path d="M7 14l5-5 5 5"/>',
   ellipsis: '<circle cx="6" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18" cy="12" r="1.3" fill="currentColor"/>',
   masks: '<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M3.5 15.5c3-2.8 5.6-4 8.5-4s5.5 1.2 8.5 4"/><circle cx="12" cy="8" r="2.4"/>',

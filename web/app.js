@@ -1,7 +1,7 @@
 import * as core from "./core/index.js";
 import { createPlatform, droppedFiles } from "./platform.js";
 import { icon } from "./icons.js";
-import { paintSwatch } from "./swatch.js";
+import { clearSwatches, paintSwatch } from "./swatch.js";
 
 const platform = createPlatform();
 const native = platform.kind === "native";
@@ -16,7 +16,10 @@ const OPTION_TEXT = [
   ["parametric", "Parametric → points", "Masks only take point curves, so parametric sliders are traced as points"],
   ["grayscale", "B&W → desaturate", "Black & white presets make the masked area black & white"],
   ["vibrance", "Vibrance → Saturation", "Masks have no Vibrance slider; add it to Saturation at half strength"],
+  ["detail", "Sharpening & noise → mask", "Extra sharpening and noise reduction go into the mask's Sharpness and Noise sliders"],
 ];
+const HISTORY_MAX = 10;
+const COMBOS_MAX = 24;
 
 const state = {
   sources: [],           // { key, label, kind, path, available, enabled, removable, entries, errors }
@@ -35,6 +38,9 @@ const state = {
   targets: new Set(["background"]),
   options: { ...core.DEFAULT_OPTIONS },
   groupTemplate: core.DEFAULT_GROUP_TEMPLATE,
+  amount: 1,             // the mask's Amount for new presets (1 = the full look)
+  combos: [],            // combined masks the user made, by id ("combo:subject/+water/-hair")
+  history: [],           // recent exports, newest first
   inspector: true,
   settings: {},
   outputFolder: "",
@@ -100,8 +106,9 @@ async function boot() {
   platform.ready({ presets: state.entries.length });
 }
 
-async function scan() {
-  setLoading("Looking for your presets…");
+let lastErrors = 0;
+async function scan({ quiet = false } = {}) {
+  if (!quiet) setLoading("Looking for your presets…");
   const result = await platform.scan();
   state.outputFolder = result.outputFolder || "";
   state.apps = result.apps || {};
@@ -110,13 +117,36 @@ async function scan() {
   const found = [];
   for (const src of result.sources || []) {
     const count = (src.files || []).length;
-    if (count) setLoading(`Reading ${plural(count, "file")} from ${src.label}…`);
+    if (count && !quiet) setLoading(`Reading ${plural(count, "file")} from ${src.label}…`);
     found.push(await loadSource({ ...src, enabled: enabled[src.key] ?? src.defaultEnabled ?? true }));
   }
   state.sources = [...found, ...kept];
+  // A file can change in place (same path, new settings), so nothing worked out from the old one is kept.
+  state.conversions.clear();
+  clearSwatches();
   rebuild();
   const errors = state.sources.reduce((n, s) => n + s.errors.length, 0);
-  if (errors) toast(`${plural(errors, "file")} couldn't be read (details in Settings › Sources)`);
+  if (errors && (!quiet || errors > lastErrors)) toast(`${plural(errors, "file")} couldn't be read (details in Settings › Sources)`);
+  lastErrors = errors;
+}
+
+// The Mac app watches the preset folders and calls this when something in them changes: the library
+// updates in place, keeping the selection, the scroll position and the open preset.
+let refreshing = null, refreshAgain = false;
+function refreshSources() {
+  if (refreshing) { refreshAgain = true; return refreshing; }
+  const before = new Set(state.entries.map((e) => e.id));
+  refreshing = scan({ quiet: true }).then(() => {
+    render();
+    const added = state.entries.filter((e) => !before.has(e.id)).length;
+    const removed = before.size - (state.entries.length - added);
+    if (added) toast(`${plural(added, "new preset")} found`);
+    else if (removed > 0) toast(`${plural(removed, "preset")} removed`);
+  }).catch((err) => platform.log(err?.stack || err)).finally(() => {
+    refreshing = null;
+    if (refreshAgain) { refreshAgain = false; refreshSources(); }
+  });
+  return refreshing;
 }
 
 async function loadSource(src, { allowUntyped = false } = {}) {
@@ -291,13 +321,15 @@ function plannedCount() {
 }
 
 function presetName(preset) {
-  const multi = state.targets.size > 1 && !state.groupTemplate.includes("{target}");
   const first = [...state.targets][0];
-  return multi && first ? `${preset.name} (${core.target(first).label})` : preset.name;
+  return first ? core.presetTitle(preset.name, first, { targetCount: state.targets.size, groupTemplate: state.groupTemplate, amount: state.amount }) : preset.name;
 }
 
 const pctOf = (conv) => Math.round(conv.coverage * 100);
 const itemId = (id) => `p${state.index.get(id) ?? "x"}`;
+/** A mask's icon; every combination shares one. */
+const maskIcon = (id) => (core.isCombo(id) ? "combine" : id);
+const percent = (amount) => `${Math.round(amount * 100)}%`;
 
 // ---------- rendering ----------
 
@@ -376,6 +408,13 @@ function renderToolbar() {
   const sw = document.querySelector(".view-switch");
   sw.dataset.view = state.view;
   for (const b of sw.querySelectorAll("button")) b.setAttribute("aria-checked", String(b.dataset.view === state.view));
+
+  const history = $("historyButton");
+  if (history.hidden === Boolean(state.history.length)) {
+    history.hidden = !state.history.length;
+    history.classList.toggle("appear", !history.hidden && document.documentElement.classList.contains("settled"));
+    queueDragRegions();
+  }
 
   const ins = $("toggleInspector");
   const open = narrow(980) ? $("app").classList.contains("show-inspector") : state.inspector;
@@ -737,7 +776,7 @@ function renderBar() {
     chosen.length ? h("span", { class: "bar-into", text: "into" }) : null,
     ...shown.map((id, i) => {
       const t = core.target(id);
-      const chip = h("span", { class: "chip", "data-chip": id, "data-i": String(i) }, icon(id, 15), h("span", { text: t.label }),
+      const chip = h("span", { class: "chip", "data-chip": id, "data-i": String(i) }, icon(maskIcon(id), 15), h("span", { text: t.label }),
         h("button", { class: "chip-x", "aria-label": `Remove ${t.label}`, title: `Remove ${t.label}`, onclick: () => toggleTarget(id) }, icon("close", 10)));
       if (chipsShown.has(id)) chip.style.animation = "none";
       return chip;
@@ -747,10 +786,10 @@ function renderBar() {
     chosen.length > 1 ? h("span", { class: "chip more-chip more-1", text: `+${chosen.length - 1}`, title: rest(1) }) : null);
   chipsShown = fresh;
   bar.masksButton.classList.toggle("empty-pick", !chosen.length);
-  bar.masksButton.querySelector(".long").textContent = chosen.length ? "Masks…" : "Choose Masks…";
+  bar.masksButton.querySelector(".long").textContent = !chosen.length ? "Choose Masks…" : state.amount === 1 ? "Masks…" : `Masks at ${percent(state.amount)}…`;
   bar.masksButton.querySelector(".short").textContent = !chosen.length ? "Choose Masks…"
     : chosen.length === 1 ? core.target(chosen[0]).label : `${chosen.length} Masks`;
-  bar.masksButton.title = chosen.length ? `Into: ${rest(0)}` : "Choose where the look goes";
+  bar.masksButton.title = chosen.length ? `Into: ${rest(0)}${state.amount === 1 ? "" : ` at ${percent(state.amount)}`}` : "Choose where the look goes";
 
   if (!bar.create.classList.contains("busy-state")) {
     setRolling(bar.label, total ? `Create ${plural(total, "Preset")}` : "Create Presets");
@@ -762,13 +801,20 @@ function renderBar() {
 // mask picker
 
 let pickerBuilt = false;
+const targetButton = (t) => h("button", {
+  class: "target", "data-target": t.id, "aria-pressed": "false", title: t.hint || t.label, onclick: () => toggleTarget(t.id),
+}, icon(maskIcon(t.id), 17), h("span", { class: "label", text: t.label }), h("span", { class: "tick" }, icon("check", 11)));
+
 function buildPicker() {
   const pop = $("maskPicker");
   const families = core.FAMILIES.map((fam) => h("div", { class: "mp-family", "data-family": fam.id },
     h("h4", { text: fam.label }),
-    h("div", { class: "targets" }, core.TARGETS.filter((t) => t.family === fam.id).map((t) => h("button", {
-      class: "target", "data-target": t.id, "aria-pressed": "false", title: t.hint || t.label, onclick: () => toggleTarget(t.id),
-    }, icon(t.id, 17), h("span", { class: "label", text: t.label }), h("span", { class: "tick" }, icon("check", 11)))))));
+    h("div", { class: "targets" }, core.TARGETS.filter((t) => t.family === fam.id).map(targetButton))));
+  const combined = h("div", { class: "mp-family", "data-family": "combined" },
+    h("h4", { text: "Combined" }), h("div", { class: "targets", id: "comboTargets" }));
+
+  const amount = h("div", { class: "segmented amounts", role: "group", "aria-label": "Amount inside the mask" },
+    core.AMOUNTS.map((value) => h("button", { "data-amount": String(value), "aria-pressed": "false", onclick: () => setAmount(value) }, percent(value))));
 
   const leftovers = h("div", { class: "segmented", role: "group", "aria-label": "Settings a mask can't hold" },
     [["drop", "Leave Out"], ["global", "Whole Photo"]].map(([value, label]) => h("button", {
@@ -789,11 +835,13 @@ function buildPicker() {
     },
   });
 
-  fill(pop, 
+  const main = h("div", { class: "mp-page", "data-page": "main" },
     h("div", { class: "mp-scroll" },
       h("div", { class: "mp-head" }, h("h3", { text: "Put the look on" }),
         h("button", { class: "link", id: "clearTargets", text: "Clear", onclick: () => { state.targets.clear(); targetsChanged(); } })),
       ...families,
+      combined,
+      h("div", { class: "mp-section" }, h("h4", { text: "Amount inside the mask" }), amount, h("small", { id: "amountHint" })),
       h("div", { class: "mp-section" }, h("h4", { text: "Settings a mask can't hold" }), leftovers, h("small", { id: "leftoverHint" })),
       h("details", { class: "more", open: Boolean(state.settings.moreOpen), ontoggle: (ev) => { state.settings.moreOpen = ev.target.open; saveSettings(); } },
         h("summary", null, icon("chevron", 12), "More Options"),
@@ -802,7 +850,23 @@ function buildPicker() {
             h("small", { id: "templateExample" }), h("small", { text: "{target} and {group} are filled in for you." }))))),
     h("div", { class: "mp-foot" }, h("div", { class: "tally", id: "tally", "aria-live": "polite" }),
       h("button", { class: "button primary", id: "pickerDone", text: "Done", onclick: () => closePopover() })));
+  fill(pop, main, h("div", { class: "mp-page", "data-page": "combine", hidden: true }));
   pickerBuilt = true;
+  renderCombos();
+}
+
+function renderCombos() {
+  const box = $("comboTargets");
+  if (!box) return;
+  fill(box,
+    ...state.combos.map((id) => {
+      const t = core.target(id);
+      return h("div", { class: "combo" }, targetButton(t),
+        h("button", { class: "combo-x", title: `Delete “${t.label}”`, "aria-label": `Delete the combination ${t.label}`, onclick: () => deleteCombo(id) }, icon("close", 9)));
+    }),
+    state.combos.length < COMBOS_MAX ? h("button", { class: "target add-combo", id: "combineButton", title: "Start from one mask, then add or subtract others", onclick: () => showBuilder(true) },
+      icon("combine", 17), h("span", { class: "label", text: "Combine Masks…" })) : null);
+  syncPicker();
 }
 
 function syncPicker() {
@@ -810,22 +874,32 @@ function syncPicker() {
   const pop = $("maskPicker");
   for (const b of pop.querySelectorAll("[data-target]")) b.setAttribute("aria-pressed", String(state.targets.has(b.dataset.target)));
   for (const b of pop.querySelectorAll("[data-leftovers]")) b.setAttribute("aria-pressed", String(state.options.leftovers === b.dataset.leftovers));
+  for (const b of pop.querySelectorAll("[data-amount]")) b.setAttribute("aria-pressed", String(state.amount === Number(b.dataset.amount)));
   for (const s of pop.querySelectorAll("[data-option]")) s.checked = Boolean(state.options[s.dataset.option]);
   for (const fam of pop.querySelectorAll(".mp-family")) {
-    const picked = core.TARGETS.filter((t) => t.family === fam.dataset.family && state.targets.has(t.id)).length;
-    fam.querySelector("h4").textContent = `${core.FAMILIES.find((f) => f.id === fam.dataset.family).label}${picked ? ` · ${picked} picked` : ""}`;
+    const id = fam.dataset.family;
+    const label = core.FAMILIES.find((f) => f.id === id)?.label || "Combined";
+    const ids = id === "combined" ? state.combos : core.TARGETS.filter((t) => t.family === id).map((t) => t.id);
+    const picked = ids.filter((x) => state.targets.has(x)).length;
+    fam.querySelector("h4").textContent = `${label}${picked ? ` · ${picked} picked` : ""}`;
   }
   $("clearTargets").hidden = !state.targets.size;
+  const current = state.byId.get(state.current)?.preset;
+  const first = [...state.targets][0] || "background";
+  $("amountHint").textContent = state.amount === 1
+    ? "The full look. Lower amounts make lighter versions of the same presets."
+    : `Lighter versions are presets of their own, named like “${core.presetTitle(current?.name || "Moody Teal", first, { amount: state.amount })}”.`;
   $("leftoverHint").textContent = state.options.leftovers === "global"
     ? "Profile, HSL, vignette, grain and the like stay on the whole photo, as in the original preset."
     : "Profile, HSL, vignette, grain and the like are left out, so only the masked area changes.";
-  const example = core.groupName({ group: state.byId.get(state.current)?.preset.group || "Moody" }, [...state.targets][0] || "background", state.groupTemplate);
+  const example = core.groupName({ group: current?.group || "Moody" }, first, state.groupTemplate);
   $("templateExample").textContent = `e.g. ${example}`;
 
   const { presets, usable, skipped, total } = plannedCount();
   fill($("tally"), ...(presets === 0 ? ["Pick a preset first."]
     : state.targets.size === 0 ? ["Pick at least one place for the look."]
       : [h("b", { text: plural(usable, "preset") }), " × ", h("b", { text: plural(state.targets.size, "mask") }), " = ", h("b", { text: plural(total, "new preset") }),
+        state.amount === 1 ? null : ` at ${percent(state.amount)}`,
         skipped ? h("div", { class: "muted", text: `${plural(skipped, "preset")} skipped: nothing in ${skipped === 1 ? "it" : "them"} can go into a mask` }) : null]));
 }
 
@@ -833,8 +907,226 @@ function togglePicker(anchor = $("masksButton")) {
   const pop = $("maskPicker");
   if (openPop?.pop === pop) return closePopover();
   if (!pickerBuilt) buildPicker();
+  if (builderOpen()) showBuilder(false, { animate: false });
   syncPicker();
   openPopover(pop, anchor, { place: "above", focus: '[data-target][aria-pressed="true"], [data-target]' });
+}
+
+// combining masks: a second page in the picker
+
+const draft = { base: "subject", add: [], subtract: [] };
+const builderOpen = () => pickerBuilt && !$("maskPicker").querySelector('[data-page="combine"]').hidden;
+
+function showBuilder(open, { animate = true } = {}) {
+  const pop = $("maskPicker");
+  const main = pop.querySelector('[data-page="main"]'), builder = pop.querySelector('[data-page="combine"]');
+  if (open) {
+    draft.add = [];
+    draft.subtract = [];
+    renderBuilder();
+  }
+  main.hidden = open;
+  builder.hidden = !open;
+  const shown = open ? builder : main;
+  shown.classList.remove("forward", "back");
+  if (animate) {
+    void shown.offsetWidth;
+    shown.classList.add(open ? "forward" : "back");
+  }
+  positionPopover();
+  // From the keyboard, focus follows to the first control; with the mouse the panel keeps it (no stray focus ring).
+  if (animate) requestAnimationFrame(() => (keyboardOpen ? (open ? builder.querySelector("select") : $("combineButton")) : pop)?.focus({ preventScroll: true }));
+}
+
+function renderBuilder(focusKind) {
+  const builder = $("maskPicker").querySelector('[data-page="combine"]');
+  const used = new Set([draft.base, ...draft.add, ...draft.subtract]);
+  const full = draft.add.length + draft.subtract.length >= core.MAX_COMBINED;
+  const choices = (keep, placeholder) => [
+    placeholder ? h("option", { value: "", text: placeholder }) : null,
+    ...core.FAMILIES.map((fam) => {
+      const items = core.TARGETS.filter((t) => t.family === fam.id && keep(t));
+      return items.length ? h("optgroup", { label: fam.label }, items.map((t) => h("option", { value: t.id, text: t.label }))) : null;
+    }),
+  ];
+  const select = (props, kids) => h("span", { class: "select" }, h("select", props, kids), icon("down", 12));
+
+  const base = select({
+    "aria-label": "Start with", "data-kind": "base",
+    onchange: (ev) => {
+      draft.base = ev.target.value;
+      draft.add = draft.add.filter((x) => x !== draft.base);
+      draft.subtract = draft.subtract.filter((x) => x !== draft.base);
+      renderBuilder("base");
+    },
+  }, choices(() => true));
+  base.querySelector("select").value = draft.base;
+
+  const part = (kind, heading, placeholder) => h("div", { class: "cb-row" },
+    h("h4", { text: heading }),
+    h("div", { class: "cb-parts" },
+      ...draft[kind].map((id) => h("span", { class: `chip cb-chip ${kind}` }, icon(id, 14), h("span", { text: core.target(id).label }),
+        h("button", {
+          class: "chip-x", "aria-label": `Don't ${kind} ${core.target(id).label}`, title: "Remove",
+          onclick: () => { draft[kind] = draft[kind].filter((x) => x !== id); renderBuilder(kind); },
+        }, icon("close", 10)))),
+      select({
+        "aria-label": placeholder, "data-kind": kind, disabled: full,
+        onchange: (ev) => { if (ev.target.value) { draft[kind].push(ev.target.value); renderBuilder(kind); } },
+      }, choices((t) => core.combinable(t.id) && !used.has(t.id), placeholder))));
+
+  let id = null, problem = "";
+  if (draft.add.length || draft.subtract.length) {
+    try { id = core.combineTargets(draft.base, draft); } catch (err) { problem = err.message; }
+  }
+  const t = id && core.target(id);
+  const existing = id && state.combos.includes(id);
+
+  fill(builder,
+    h("div", { class: "mp-scroll" },
+      h("div", { class: "mp-head cb-head" },
+        h("button", { class: "icon-button back", "aria-label": "Back to masks", title: "Back", onclick: () => showBuilder(false) }, icon("chevron", 15)),
+        h("h3", { text: "Combine Masks" })),
+      h("div", { class: "cb-row" }, h("h4", { text: "Start with" }), h("div", { class: "cb-parts" }, base)),
+      part("add", "Add", "Add a mask…"),
+      part("subtract", "Subtract", "Subtract a mask…"),
+      h("div", { class: `cb-preview${t ? "" : " blank"}`, "aria-live": "polite" }, icon("combine", 20),
+        h("div", null,
+          h("b", { text: t ? t.label : core.target(draft.base).label }),
+          h("small", { text: problem || (t ? t.hint : "Add or subtract at least one more mask.") })))),
+    h("div", { class: "mp-foot" },
+      h("div", { class: "tally", text: full ? `That's the most a combination can hold (${core.MAX_COMBINED} masks added or subtracted).` : "Lightroom finds each part in the photo when you apply the preset." }),
+      h("button", { class: "button", text: "Cancel", onclick: () => showBuilder(false) }),
+      h("button", { class: "button primary", id: "addCombo", text: existing ? "Use Combination" : "Add Combination", disabled: !id, onclick: () => addCombo(id) })));
+  if (focusKind) (keyboardOpen ? builder.querySelector(`select[data-kind="${focusKind}"]`) : $("maskPicker"))?.focus({ preventScroll: true });
+  positionPopover();
+}
+
+function addCombo(id) {
+  if (!id) return;
+  if (!state.combos.includes(id)) state.combos.push(id);
+  state.targets.add(id);
+  renderCombos();
+  showBuilder(false);
+  targetsChanged();
+}
+
+function deleteCombo(id) {
+  state.combos = state.combos.filter((x) => x !== id);
+  state.targets.delete(id);
+  renderCombos();
+  targetsChanged();
+  $("combineButton")?.focus({ preventScroll: true });
+}
+
+function setAmount(value) {
+  state.amount = core.AMOUNTS.includes(value) ? value : 1;
+  saveSettings();
+  renderBar();
+  renderDetail();
+  syncPicker();
+}
+
+// recent exports
+
+const goneExports = new Set(); // exports whose file was moved or deleted (checked when the list opens)
+
+function exportTitle(item) {
+  const [first] = item.names || [];
+  const n = item.presets.length;
+  if (!first) return plural(n, "preset");
+  return n === 1 ? first : `${first} and ${plural(n - 1, "other")}`;
+}
+
+function maskSummary(ids) {
+  const labels = ids.filter(core.isTarget).map((id) => core.target(id).label);
+  return labels.length <= 2 ? labels.join(" and ") : `${labels[0]} and ${labels.length - 1} more masks`;
+}
+
+function when(ms) {
+  const d = new Date(ms), now = new Date();
+  const time = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const day = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  if (ms >= day) return `Today, ${time}`;
+  if (ms >= day - 864e5) return `Yesterday, ${time}`;
+  return `${d.toLocaleDateString(undefined, { month: "short", day: "numeric", ...(d.getFullYear() === now.getFullYear() ? {} : { year: "numeric" }) })}, ${time}`;
+}
+
+function renderHistory() {
+  const pop = $("historyPop");
+  fill(pop,
+    h("div", { class: "hp-head" }, h("h3", { text: "Recent Exports" }), h("button", { class: "link", text: "Clear", onclick: clearHistory })),
+    h("div", { class: "hp-list" }, state.history.map((item, i) => {
+      const gone = goneExports.has(item.at);
+      const title = exportTitle(item);
+      return h("div", { class: `hp-row${gone ? " gone" : ""}`, title: `${plural(item.count, "preset")} made${item.zip ? `\n${item.zip}` : ""}` },
+        h("span", { class: "hp-icon" }, icon(item.targets.length === 1 ? maskIcon(item.targets[0]) : "masks", 17)),
+        h("div", { class: "hp-text" },
+          h("b", { text: title }),
+          h("small", { text: `into ${maskSummary(item.targets)}` }),
+          h("small", { text: [when(item.at), item.amount && item.amount !== 1 ? `at ${percent(item.amount)}` : "", gone ? "moved or deleted" : ""].filter(Boolean).join(" · ") })),
+        native ? h("button", {
+          class: "icon-button", disabled: gone, title: gone ? "The file was moved or deleted" : "Show in Finder",
+          "aria-label": `Show ${title} in Finder`, onclick: () => platform.reveal(item.zip || item.folder),
+        }, icon("reveal", 15)) : null,
+        h("button", { class: "icon-button", title: "Export Again", "aria-label": `Export ${title} again`, "data-again": String(i), onclick: () => exportAgain(i) }, icon("refresh", 15)));
+    })));
+}
+
+async function openHistory() {
+  const pop = $("historyPop");
+  if (openPop?.pop === pop) return closePopover();
+  if (!state.history.length) return toast("Nothing exported yet");
+  renderHistory();
+  openPopover(pop, $("historyButton"), { place: "below", focus: "[data-again]" });
+  if (!native || !platform.exists) return;
+  const there = await platform.exists(state.history.map((x) => x.zip || x.folder || ""));
+  if (!Array.isArray(there) || openPop?.pop !== pop) return;
+  state.history.forEach((x, i) => (there[i] ? goneExports.delete(x.at) : goneExports.add(x.at)));
+  renderHistory();
+}
+
+function recordExport({ result, files, entries, targets, options, groupTemplate, amount }) {
+  state.history.unshift({
+    at: Date.now(), zip: result.zip || "", folder: result.folder || "", count: files.length,
+    // How to find these presets again: their Lightroom UUID when they have one (survives moves), else where they were.
+    presets: entries.map((e) => (e.preset.uuid ? `u:${e.preset.uuid.toUpperCase()}` : `i:${e.id}`)),
+    names: entries.slice(0, 1).map((e) => e.preset.name),
+    targets, options: { ...options }, groupTemplate, amount,
+  });
+  state.history.length = Math.min(state.history.length, HISTORY_MAX);
+  saveSettings();
+  renderToolbar();
+}
+
+function exportAgain(i) {
+  const item = state.history[i];
+  if (!item) return;
+  closePopover(true);
+  const targets = item.targets.filter(core.isTarget);
+  if (!targets.length) return toast("Those masks aren't available any more", true);
+  const byUuid = new Map(state.entries.filter((e) => e.preset.uuid).map((e) => [e.preset.uuid.toUpperCase(), e]));
+  const found = [];
+  for (const key of item.presets) {
+    const entry = key.startsWith("u:") ? byUuid.get(key.slice(2)) : state.byId.get(key.slice(2));
+    if (entry && state.entries.includes(entry)) found.push(entry);
+  }
+  const unique = core.dedupe(found);
+  if (!unique.length) return toast(`None of those ${plural(item.presets.length, "preset")} are in your library now`, true);
+  return runExport({
+    entries: unique, targets, missing: item.presets.length - unique.length,
+    options: { ...core.DEFAULT_OPTIONS, ...pick(item.options || {}, Object.keys(core.DEFAULT_OPTIONS)) },
+    groupTemplate: item.groupTemplate || core.DEFAULT_GROUP_TEMPLATE, amount: core.AMOUNTS.includes(item.amount) ? item.amount : 1,
+  });
+}
+
+function clearHistory() {
+  state.history = [];
+  goneExports.clear();
+  closePopover();
+  saveSettings();
+  renderToolbar();
+  $("openSettings").focus({ preventScroll: true });
 }
 
 // popovers
@@ -1089,9 +1381,12 @@ function removeSource(key) {
   render();
 }
 
-async function create() {
-  const entries = selectedEntries();
-  const targets = [...state.targets];
+function create() {
+  return runExport({ entries: selectedEntries(), targets: [...state.targets], options: state.options, groupTemplate: state.groupTemplate, amount: state.amount });
+}
+
+/** Make and save presets: from the selection (Create), or again from a recent export. */
+async function runExport({ entries, targets, options, groupTemplate, amount = 1, missing = 0 }) {
   if (!entries.length || !targets.length) return;
   const button = $("createButton");
   button.disabled = true;
@@ -1099,7 +1394,8 @@ async function create() {
   bar.label.textContent = "Creating…";
   button.prepend(h("span", { class: "busy", "aria-hidden": "true" }));
   try {
-    const { jobs, skipped } = core.planBatch(entries, targets, { options: state.options, groupTemplate: state.groupTemplate });
+    const { jobs, skipped } = core.planBatch(entries, targets, { options, groupTemplate, amount });
+    if (missing) skipped.push({ name: plural(missing, "preset"), reason: "not in your library any more" });
     if (!jobs.length) return toast("Nothing to create: those presets have nothing a mask can hold", true);
     const files = core.renderBatch(jobs);
     const label = targets.length === 1 ? core.target(targets[0]).label : `${targets.length} masks`;
@@ -1108,6 +1404,7 @@ async function create() {
     const result = await platform.save({ folderName, zipName: `${folderName}.zip`, files, zipBase64: core.bytesToBase64(zip) });
     if (result?.error) return toast(result.error, true);
     closePopover(true);
+    recordExport({ result, files, entries, targets, options, groupTemplate, amount });
     showDone(result, files, skipped);
     return { ...result, count: files.length, skipped: skipped.length };
   } catch (err) {
@@ -1249,7 +1546,14 @@ function showSettings(tab = "sources") {
 
 function restoreSettings() {
   const s = state.settings;
-  if (Array.isArray(s.targets)) state.targets = new Set(s.targets.filter((id) => core.TARGETS.some((t) => t.id === id)));
+  const valid = (id) => typeof id === "string" && core.isTarget(id);
+  if (Array.isArray(s.combos)) state.combos = [...new Set(s.combos.filter((id) => valid(id) && core.isCombo(id)))].slice(0, COMBOS_MAX);
+  if (Array.isArray(s.targets)) state.targets = new Set(s.targets.filter((id) => valid(id) && (!core.isCombo(id) || state.combos.includes(id))));
+  if (core.AMOUNTS.includes(s.amount)) state.amount = s.amount;
+  if (Array.isArray(s.history)) {
+    state.history = s.history.filter((x) => x && typeof x.at === "number" && typeof x.count === "number"
+      && Array.isArray(x.presets) && Array.isArray(x.targets) && x.presets.every((k) => typeof k === "string")).slice(0, HISTORY_MAX);
+  }
   if (s.options) state.options = { ...core.DEFAULT_OPTIONS, ...pick(s.options, Object.keys(core.DEFAULT_OPTIONS)) };
   if (typeof s.groupTemplate === "string" && s.groupTemplate.trim()) state.groupTemplate = s.groupTemplate;
   if (s.view === "grid" || s.view === "list") state.view = s.view;
@@ -1266,6 +1570,9 @@ function saveSettings() {
     targets: [...state.targets],
     options: state.options,
     groupTemplate: state.groupTemplate,
+    amount: state.amount,
+    combos: state.combos,
+    history: state.history,
     view: state.view,
     sort: state.sort,
     sortDir: state.sortDir,
@@ -1290,6 +1597,7 @@ function applyTheme() {
 
 function bindChrome() {
   $("addButton").addEventListener("click", openAddMenu);
+  $("historyButton").addEventListener("click", openHistory);
   $("openSettings").addEventListener("click", () => showSettings());
   $("toggleInspector").addEventListener("click", toggleInspector);
   $("toggleSidebar").addEventListener("click", () => $("app").classList.toggle("show-sidebar"));
@@ -1355,6 +1663,7 @@ function bindChrome() {
   });
 
   window.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape" && openPop && openPop.pop === $("maskPicker") && builderOpen()) { ev.preventDefault(); showBuilder(false); return; }
     if (ev.key === "Escape" && openPop) { ev.preventDefault(); const anchor = openPop.anchor; closePopover(); anchor.focus(); return; }
     if (!(ev.metaKey || ev.ctrlKey) || $("dialog").open) return;
     if (native) return; // the Mac app's menu bar handles these
@@ -1398,6 +1707,7 @@ function command(name) {
     case "toggleInspector": toggleInspector(); break;
     case "toggleSidebar": $("app").classList.toggle("show-sidebar"); break;
     case "masks": togglePicker(); break;
+    case "history": openHistory(); break;
     default: platform.log(`Unknown command: ${name}`);
   }
 }
@@ -1452,6 +1762,11 @@ window.app = {
   showSettings,
   openMasks: () => togglePicker(),
   create,
+  sourcesChanged: refreshSources,
+  setAmount,
+  combine: (base, parts) => addCombo(core.combineTargets(base, parts)),
+  openHistory,
+  exportAgain,
   get state() { return state; },
 };
 

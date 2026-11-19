@@ -3,7 +3,7 @@
 import { PresetError, isConverted, isUsablePreset, parsePreset } from "./preset.js";
 import { ZipError, readZip } from "./zip.js";
 import { convert } from "./mapping.js";
-import { buildPreset, fileStem, groupName, stableId, uniqueNames } from "./writer.js";
+import { buildPreset, fileStem, groupName, normalAmount, stableId, uniqueNames } from "./writer.js";
 import { target } from "./targets.js";
 
 const PRESET_FILE = /\.(xmp|lrtemplate)$/i;
@@ -60,11 +60,25 @@ export function dedupe(entries) {
   });
 }
 
+// Mask strengths offered in the app (the mask's Amount).
+export const AMOUNTS = [1, 0.75, 0.5, 0.25];
+
+/**
+ * A new preset's name: the original's, plus the mask when several masks share a group (the template has no
+ * {target}), plus the strength when it isn't 100%. "Moody Teal (Sky, 50%)".
+ */
+export function presetTitle(name, targetId, { targetCount = 1, groupTemplate = "{target} · {group}", amount = 1 } = {}) {
+  const extra = [];
+  if (targetCount > 1 && !String(groupTemplate).includes("{target}")) extra.push(target(targetId).label);
+  const strength = normalAmount(amount);
+  if (strength !== 1) extra.push(`${Math.round(strength * 100)}%`);
+  return extra.length ? `${name} (${extra.join(", ")})` : name;
+}
+
 /** One job per (preset, mask). Presets with nothing maskable, or made by this app, are skipped. */
-export function planBatch(entries, targetIds, { options = {}, groupTemplate } = {}) {
+export function planBatch(entries, targetIds, { options = {}, groupTemplate, amount = 1 } = {}) {
   const jobs = [], skipped = [];
   const template = groupTemplate || "{target} · {group}";
-  const nameNeedsTarget = targetIds.length > 1 && !template.includes("{target}");
   for (const entry of entries) {
     const { preset } = entry;
     if (isConverted(preset)) { skipped.push({ name: preset.name, reason: "already made by this app" }); continue; }
@@ -72,9 +86,9 @@ export function planBatch(entries, targetIds, { options = {}, groupTemplate } = 
     if (conv.empty) { skipped.push({ name: preset.name, reason: "nothing in it can go into a mask" }); continue; }
     for (const id of targetIds) {
       jobs.push({
-        entry, targetId: id, conv,
+        entry, targetId: id, conv, amount: normalAmount(amount),
         group: groupName(preset, id, template),
-        name: nameNeedsTarget ? `${preset.name} (${target(id).label})` : preset.name,
+        name: presetTitle(preset.name, id, { targetCount: targetIds.length, groupTemplate: template, amount }),
       });
     }
   }
@@ -84,7 +98,7 @@ export function planBatch(entries, targetIds, { options = {}, groupTemplate } = 
 /** The .xmp files for a batch, with unique, readable file names. */
 export function renderBatch(jobs) {
   const names = uniqueNames(jobs.map((j) => fileStem(`${j.group} - ${j.name}`)));
-  return jobs.map((j, i) => ({ name: names[i], text: buildPreset(j.entry.preset, j.conv, j.targetId, { group: j.group, name: j.name }) }));
+  return jobs.map((j, i) => ({ name: names[i], text: buildPreset(j.entry.preset, j.conv, j.targetId, { group: j.group, name: j.name, amount: j.amount }) }));
 }
 
 export function decodeText(bytes) {

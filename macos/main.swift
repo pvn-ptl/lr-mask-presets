@@ -191,6 +191,66 @@ func installedApps() -> [String: Bool] {
     ]
 }
 
+// MARK: - Watching preset folders
+
+/// Every folder the app reads presets from. Watched (read-only) so the library updates while the app is open.
+func watchRoots(_ places: Places) -> [URL] {
+    places.lightroomPresetFolders + [places.cameraRawUser, places.classicTemplates, places.cameraRawSystem]
+        + places.folders.map { URL(fileURLWithPath: $0) }
+}
+
+/// Calls `onChange` (once, after things settle) when a preset, a .zip pack or a folder appears, changes or goes away
+/// under the watched folders. Uses FSEvents, so it costs nothing while nothing changes, and never writes anything.
+final class FolderWatcher {
+    private var stream: FSEventStreamRef?
+    private var pending: DispatchWorkItem?
+    private(set) var paths: [String] = []
+    var onChange: (() -> Void)?
+
+    func watch(_ urls: [URL]) {
+        let wanted = Array(Set(urls.filter(isDirectory).map { $0.standardizedFileURL.path })).sorted()
+        guard wanted != paths else { return }
+        stop()
+        paths = wanted
+        guard !wanted.isEmpty else { return }
+        var context = FSEventStreamContext(version: 0, info: Unmanaged.passUnretained(self).toOpaque(), retain: nil, release: nil, copyDescription: nil)
+        let callback: FSEventStreamCallback = { _, info, count, eventPaths, eventFlags, _ in
+            guard let info else { return }
+            let watcher = Unmanaged<FolderWatcher>.fromOpaque(info).takeUnretainedValue()
+            let list = Unmanaged<NSArray>.fromOpaque(eventPaths).takeUnretainedValue() as? [String] ?? []
+            for i in 0..<count {
+                let flags = Int(eventFlags[i])
+                let ext = i < list.count ? (list[i] as NSString).pathExtension.lowercased() : ""
+                let folder = flags & (kFSEventStreamEventFlagItemIsDir | kFSEventStreamEventFlagMustScanSubDirs) != 0
+                if folder || presetExtensions.contains(ext) || ext == "zip" { watcher.changed(); return }
+            }
+        }
+        let flags = FSEventStreamCreateFlags(kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagFileEvents)
+        guard let created = FSEventStreamCreate(nil, callback, &context, wanted as CFArray,
+                                                FSEventStreamEventId(kFSEventStreamEventIdSinceNow), 0.5, flags) else { return }
+        FSEventStreamSetDispatchQueue(created, .main)
+        FSEventStreamStart(created)
+        stream = created
+    }
+
+    private func changed() {
+        pending?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.onChange?() }
+        pending = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: work)
+    }
+
+    func stop() {
+        guard let current = stream else { return }
+        FSEventStreamStop(current)
+        FSEventStreamInvalidate(current)
+        FSEventStreamRelease(current)
+        stream = nil
+    }
+
+    deinit { stop() }
+}
+
 // MARK: - Writing
 
 func uniqueFolder(_ url: URL) -> URL {
@@ -304,8 +364,15 @@ final class Bridge: NSObject, WKScriptMessageHandlerWithReply {
     weak var window: NSWindow?
     weak var webView: AppWebView?
     var onReady: (([String: Any]) -> Void)?
+    let watcher = FolderWatcher()
 
-    init(places: Places) { self.places = places }
+    init(places: Places) {
+        self.places = places
+        super.init()
+        watcher.onChange = { [weak self] in
+            self?.webView?.evaluateJavaScript("window.app && window.app.sourcesChanged && (window.app.sourcesChanged(), true)")
+        }
+    }
 
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage, replyHandler: @escaping (Any?, String?) -> Void) {
         guard let body = message.body as? [String: Any], let cmd = body["cmd"] as? String else { return replyHandler(nil, "Bad message") }
@@ -331,7 +398,10 @@ final class Bridge: NSObject, WKScriptMessageHandlerWithReply {
         case "scan":
             DispatchQueue.global(qos: .userInitiated).async {
                 let result = scanAll(places)
-                DispatchQueue.main.async { reply(result) }
+                DispatchQueue.main.async {
+                    self.watcher.watch(watchRoots(places))
+                    reply(result)
+                }
             }
 
         case "chooseFolders":
@@ -346,6 +416,7 @@ final class Bridge: NSObject, WKScriptMessageHandlerWithReply {
                 var folders = places.folders
                 for url in urls where !folders.contains(url.path) { folders.append(url.path) }
                 places.folders = folders
+                self.watcher.watch(watchRoots(places))
                 DispatchQueue.global(qos: .userInitiated).async {
                     let sources = urls.map { folderSource($0.path) }
                     DispatchQueue.main.async { reply(["sources": sources]) }
@@ -354,6 +425,7 @@ final class Bridge: NSObject, WKScriptMessageHandlerWithReply {
 
         case "removeFolder":
             if let path = body["path"] as? String { places.folders = places.folders.filter { $0 != path } }
+            watcher.watch(watchRoots(places))
             reply(true)
 
         case "chooseFiles":
@@ -419,6 +491,11 @@ final class Bridge: NSObject, WKScriptMessageHandlerWithReply {
                 }
             }
             reply(true)
+
+        case "exists":
+            // Which of these files are still there (for the Recent Exports list).
+            let paths = (body["paths"] as? [String] ?? []).prefix(100)
+            reply(paths.map { !$0.isEmpty && FileManager.default.fileExists(atPath: $0) })
 
         case "openLightroom":
             let ids = ["com.adobe.lightroomCC", "com.adobe.LightroomClassicCC7"]
@@ -772,6 +849,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         check("creates presets for every mask", result && result.count === 27 && result.zip, JSON.stringify(result));
         const install = await native("installCameraRaw", { files: [{ name: "x.xmp", text: "<x/>" }, { name: "../escape.xmp", text: "no" }] });
         check("installs only safe file names", install.count === 1, JSON.stringify(install));
+        check("remembers the export for Recent Exports", app.state.history.length === 1 && app.state.history[0].count === 27, app.state.history.length);
+        const there = await native("exists", { paths: [result.zip, result.zip + ".gone"] });
+        check("knows which exports are still on disk", there[0] === true && there[1] === false, JSON.stringify(there));
+        const watched = '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+          + '<rdf:Description rdf:about="" xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/" crs:PresetType="Normal" crs:Contrast2012="+25">'
+          + '<crs:Name><rdf:Alt><rdf:li xml:lang="x-default">Watched Preset</rdf:li></rdf:Alt></crs:Name></rdf:Description></rdf:RDF></x:xmpmeta>';
+        await native("installCameraRaw", { files: [{ name: "Watched Preset.xmp", text: watched }] });
+        const seenBy = Date.now() + 10000;
+        while (Date.now() < seenBy && !app.state.entries.some((e) => e.preset.name === "Watched Preset")) await new Promise((r) => setTimeout(r, 100));
+        check("picks up presets added while it's open", app.state.entries.some((e) => e.preset.name === "Watched Preset"));
         return { ...report, result };
         """
         webView.callAsyncJavaScript(script, arguments: [:], in: nil, in: .page) { [weak self] outcome in

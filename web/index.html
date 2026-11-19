@@ -35,6 +35,7 @@
         </div>
         <div class="capsule">
           <button id="addButton" aria-haspopup="menu" aria-expanded="false" title="Add presets" aria-label="Add presets"><span data-icon="plus"></span></button>
+          <button id="historyButton" aria-haspopup="dialog" aria-expanded="false" title="Recent exports" aria-label="Recent exports" hidden><span data-icon="history"></span></button>
           <button id="openSettings" title="Settings" aria-label="Settings"><span data-icon="gear"></span></button>
         </div>
         <label class="search capsule">
@@ -57,6 +58,7 @@
 
 <div class="popover glass menu" id="addMenu" role="menu" tabindex="-1" hidden></div>
 <div class="popover glass mask-picker" id="maskPicker" role="dialog" aria-label="Where the look goes" tabindex="-1" hidden></div>
+<div class="popover glass history-pop" id="historyPop" role="dialog" aria-label="Recent exports" tabindex="-1" hidden></div>
 
 <div class="drop-overlay" id="dropOverlay" aria-hidden="true">
   <div class="drop-card glass"><span class="drop-icon" data-icon="download"></span><strong>Drop presets to add them</strong><span>.xmp, .lrtemplate, .zip packs or whole folders</span></div>

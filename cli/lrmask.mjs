@@ -15,11 +15,14 @@ Turns Lightroom presets into presets that apply the look inside an AI mask.
 
 Options:
   -m, --mask <ids>        Where the look goes, comma-separated (default: background). See --list-masks.
+                          Combine masks with + and -, e.g. --mask "subject +water -hair"
+  -a, --amount <percent>  How strongly the look is applied inside the mask, 1-100 (default: 100)
   -o, --out <folder>      Where to write (default: ./output)
       --whole-photo       Keep what masks can't hold (HSL, profile, vignette…) on the whole photo
       --no-parametric     Don't trace parametric curve sliders as points
       --no-grayscale      Don't turn black & white presets into a desaturated mask
       --vibrance          Add Vibrance to the mask's Saturation at half strength
+      --no-detail         Don't put extra sharpening and noise reduction into the mask
   -g, --group <template>  Lightroom group name; {target} and {group} are filled in (default: "{target} · {group}")
       --dry-run           Show what would carry over, write nothing
       --list-masks        List the masks you can use
@@ -52,6 +55,8 @@ async function main(argv) {
     allowPositionals: true,
     options: {
       mask: { type: "string", short: "m", default: "background" },
+      amount: { type: "string", short: "a", default: "100" },
+      "no-detail": { type: "boolean", default: false },
       out: { type: "string", short: "o", default: "output" },
       "whole-photo": { type: "boolean", default: false },
       "no-parametric": { type: "boolean", default: false },
@@ -69,19 +74,23 @@ async function main(argv) {
       console.log(`${fam.label}:`);
       for (const t of core.TARGETS.filter((x) => x.family === fam.id)) console.log(`  ${t.id.padEnd(20)} ${t.label}${t.hint ? ` (${t.hint})` : ""}`);
     }
+    console.log("\nCombined: start from one mask, then + or - others (masks with “not” in them can only start).");
+    console.log('  e.g. "subject +water -hair", "sky +mountains +water", "people -clothes"');
     return;
   }
   if (!positionals.length) {
     process.stderr.write(HELP);
     return 2;
   }
-  const targets = opts.mask.split(",").map((s) => s.trim()).filter(Boolean);
-  for (const id of targets) {
-    if (!core.TARGETS.some((t) => t.id === id)) throw new Error(`Unknown mask "${id}". Try --list-masks.`);
-  }
+  const targets = [...new Set(opts.mask.split(",").map((s) => s.trim()).filter(Boolean).map((spec) => {
+    try { return core.parseMaskSpec(spec); } catch (err) { throw new Error(`${err.message}. Try --list-masks.`); }
+  }))];
+  const percent = Number(String(opts.amount).replace(/%$/, ""));
+  if (!Number.isFinite(percent) || percent < 1 || percent > 100) throw new Error(`--amount takes a percentage from 1 to 100, not "${opts.amount}"`);
+  const amount = percent / 100;
   const options = {
     parametric: !opts["no-parametric"], grayscale: !opts["no-grayscale"], vibrance: opts.vibrance,
-    leftovers: opts["whole-photo"] ? "global" : "drop",
+    detail: !opts["no-detail"], leftovers: opts["whole-photo"] ? "global" : "drop",
   };
 
   const { entries, errors } = await core.loadFiles(collect(positionals), { source: "cli", allowUntyped: true });
@@ -101,7 +110,7 @@ async function main(argv) {
     return 0;
   }
 
-  const { jobs, skipped } = core.planBatch(unique, targets, { options, groupTemplate: opts.group });
+  const { jobs, skipped } = core.planBatch(unique, targets, { options, groupTemplate: opts.group, amount });
   for (const s of skipped) console.error(`skipped ${s.name}: ${s.reason}`);
   if (!jobs.length) {
     console.error("Nothing to write.");
