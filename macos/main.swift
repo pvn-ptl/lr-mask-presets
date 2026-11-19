@@ -562,6 +562,17 @@ func readPicked(_ urls: [URL]) -> [[String: Any]] {
     return files
 }
 
+/// Keep the window on the screen it opens on: a size remembered from a big display (or the default size on a
+/// small laptop) shrinks to fit, but never below the window's minimum.
+func fitToScreen(_ window: NSWindow) {
+    guard let screen = window.screen ?? NSScreen.main else { return }
+    let visible = screen.visibleFrame.insetBy(dx: 12, dy: 12)
+    var frame = window.frame
+    frame.size.width = max(window.minSize.width, min(frame.width, visible.width))
+    frame.size.height = max(window.minSize.height, min(frame.height, visible.height))
+    window.setFrame(frame, display: false)
+}
+
 func applyAppearance(_ theme: String?) {
     switch theme {
     case "light": NSApp.appearance = NSAppearance(named: .aqua)
@@ -624,22 +635,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         toolbar.showsBaselineSeparator = false
         window.toolbar = toolbar
         window.toolbarStyle = .unified
+        // The page paints its own canvas edge to edge (a gradient with frosted panels on it); until its first
+        // frame, the window shows the canvas colour so opening doesn't flash.
         window.backgroundColor = NSColor(name: nil) { appearance in
-            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? NSColor(srgbRed: 0x1d / 255, green: 0x1d / 255, blue: 0x20 / 255, alpha: 1) : .white
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                ? NSColor(srgbRed: 0x11 / 255, green: 0x12 / 255, blue: 0x16 / 255, alpha: 1)
+                : NSColor(srgbRed: 0xf1 / 255, green: 0xf2 / 255, blue: 0xf7 / 255, alpha: 1)
         }
         window.minSize = NSSize(width: 980, height: 620)
-
-        // Real vibrancy behind the page. The page leaves its sidebar clear, so the desktop shows through there.
-        let material = NSVisualEffectView(frame: NSRect(origin: .zero, size: options.size))
-        material.material = .sidebar
-        material.blendingMode = .behindWindow
-        material.state = .followsWindowActiveState
-        material.autoresizingMask = [.width, .height]
-        webView.frame = material.bounds
-        material.addSubview(webView)
-        window.contentView = material
+        window.contentView = webView
         window.setFrameAutosaveName(options.snapshot == nil && !options.selftest ? "Main" : "")
-        if options.snapshot != nil || options.selftest { window.setContentSize(options.size) }
+        if options.snapshot != nil || options.selftest { window.setContentSize(options.size) } else { fitToScreen(window) }
         window.center()
         NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.accessibilityDisplayOptionsDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
             self?.webView.evaluateJavaScript(reduceTransparencyScript())

@@ -1,6 +1,6 @@
 ---
 name: LR Mask Presets
-description: A Mac library window, in macOS's own materials, that turns Lightroom presets into masked presets.
+description: A Mac library window of frosted panels over a living dusk-sky canvas, that turns Lightroom presets into masked presets.
 colors:
   accent: "#0a84ff"
   accent-light: "#007aff"
@@ -59,6 +59,18 @@ colors:
   glass-edge-light: "rgba(0, 0, 0, .09)"
   glass-hi-light: "rgba(255, 255, 255, .95)"
   on-accent: "#ffffff"
+  canvas: "#111216"
+  canvas-light: "#f1f2f7"
+  aurora-1: "rgba(64, 102, 232, .34)"
+  aurora-2: "rgba(150, 70, 196, .30)"
+  aurora-3: "rgba(222, 112, 58, .22)"
+  aurora-1-light: "rgba(104, 156, 255, .34)"
+  aurora-2-light: "rgba(212, 146, 240, .30)"
+  aurora-3-light: "rgba(255, 172, 116, .30)"
+  glow: "rgba(118, 160, 255, .10)"
+  glow-light: "rgba(255, 255, 255, .62)"
+  panel: "rgba(28, 29, 34, .56)"
+  panel-light: "rgba(255, 255, 255, .5)"
 typography:
   display-numeral:
     fontFamily: "ui-rounded, SF Pro Rounded, -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
@@ -200,7 +212,7 @@ components:
     padding: "2px 7px"
     typography: "{typography.label}"
   inspector:
-    backgroundColor: "{colors.elevated}"
+    backgroundColor: "{colors.panel}"
     rounded: "{rounded.panel}"
     width: "{spacing.inspector-w}"
   selection-bar:
@@ -214,7 +226,7 @@ components:
   sheet:
     backgroundColor: "{colors.glass-strong}"
     rounded: "{rounded.sheet}"
-    width: "560px"
+    width: "min(560px, 100vw - 48px)"
   segmented:
     backgroundColor: "{colors.fill-2}"
     rounded: "{rounded.segmented}"
@@ -232,7 +244,7 @@ components:
 
 **Creative North Star: "The Window Apple Would Have Shipped"**
 
-LR Mask Presets is one Mac window that reads like Photos or Finder: a floating sidebar of sources and groups, a library browsed as a grid of swatch tiles or a sortable list, an inspector on the right, and a floating glass bar at the bottom that holds the one primary action, Create. It is built from macOS's own materials rather than a web dashboard's boxes: real behind-window vibrancy in the native app, Liquid Glass capsules (blur, saturation, a specular top edge, a soft drop shadow) for everything that floats over content, system colours for meaning, SF Pro for text and SF Pro Rounded for the numbers that matter.
+LR Mask Presets is one Mac window that reads like Photos or Finder: a floating sidebar of sources and groups, a library browsed as a grid of swatch tiles or a sortable list, an inspector on the right, and a floating glass bar at the bottom that holds the one primary action, Create. It is built from macOS's own materials rather than a web dashboard's boxes: frosted panels over a living canvas (a dusk sky of soft colour fields that leans toward the pointer), Liquid Glass capsules (blur, saturation, a specular top edge, a soft drop shadow) for everything that floats over content, system colours for meaning, SF Pro for text and SF Pro Rounded for the numbers that matter.
 
 Density is a desktop app's density, not a web page's: 13px body text, 30px controls, 8px insets, a 52px title band shared with the traffic lights. Colour is almost entirely neutral. The system blue marks selection and the primary action; green, orange, purple and gray say how a setting carries over and nothing else. The only rich colour on screen is the presets themselves, each drawn as a computed swatch: a synthetic landscape pushed through that preset's own settings.
 
@@ -240,7 +252,8 @@ Motion is part of the material. Things arrive on springs (about 5% overshoot), l
 
 **Key Characteristics:**
 - Dark by default, light following the system or Settings; every colour token has both variants.
-- Glass only on things that float: toolbar capsules, selection bar, popovers, sheets, toasts, the sticky list header.
+- One gradient, the canvas, under everything; the sidebar and inspector frost it, and glass floats over that: toolbar capsules, selection bar, popovers, sheets, toasts, the sticky list header.
+- A sun/moon switch in the toolbar flips Light and Dark; the new look spreads out in a circle from it.
 - One primary action per screen, in system blue, inside the floating bar.
 - Every preset is shown as its own computed swatch; every figure is computed from the preset.
 - Springs in, quick out; Reduce Motion keeps fades and stops all travel.
@@ -265,16 +278,24 @@ Each status has a fill hue (meter segments, legend dots, tinted pill backgrounds
 ### Tertiary
 - **Danger Red** (`danger`, `danger-fill`, `danger-light`): error toasts only.
 
+### The canvas
+- **Canvas** (`canvas` / `canvas-light`): the window's base colour, under everything.
+- **Aurora** (`aurora-1`, `aurora-2`, `aurora-3` and light variants): three soft radial fields placed over the library pane, where the canvas shows: blue overhead, violet to the right (it tints the inspector), an ember rising from the bottom. Centres follow the window's width (`vw`) and sizes its longer side (`vmax`), so the same sky fills a laptop and a 5K display.
+- **Glow** (`glow` / `glow-light`): a soft light that follows the pointer across the canvas.
+
 ### Neutral
-- **Window** (`content` / `content-light`): the library pane, row cards in the inspector, text-field wells.
-- **Elevated** (`elevated` / `elevated-light`): the inspector panel, welcome cards; also the opaque fallback for glass under Reduce Transparency.
+- **Window** (`content` / `content-light`): text-field wells; at 55% it is the inspector's row card.
+- **Panel** (`panel` / `panel-light`): the frosted sidebar, inspector and welcome cards (blur 26px + saturate 185% of the canvas behind).
+- **Elevated** (`elevated` / `elevated-light`): the opaque fallback for glass and panels under Reduce Transparency.
 - **Raised, Tile, Sidebar** (`raised`, `tile`, `sidebar-fill` and light variants): tile backgrounds behind swatches and the browser-mode sidebar.
 - **Labels** (`label`, `label-2`, `label-3` and light variants): primary text, secondary text and counts, section headings and placeholders. Increase Contrast collapses `label-2` into `label`.
 - **Separators and fills** (`separator`, `separator-strong`, `fill`, `fill-2`, `fill-3`): hairlines, zebra rows, hover and pressed backgrounds, tracks for meters and switches. Translucent, so they read on glass and on solid panels alike.
 - **Glass** (`glass`, `glass-strong`, `glass-edge`, `glass-hi` and light variants): the Liquid Glass recipe (see Elevation & Depth).
 
 ### Named Rules
-**The System Colour Rule.** Every hue is an Apple system colour with its accessible light-appearance variant. No brand colour, no gradients as decoration; the one gradient fill is the welcome screen's drop halo.
+**The System Colour Rule.** Every hue on a control is an Apple system colour with its accessible light-appearance variant. No brand colour on controls, no gradient fills on them; the gradients live on the canvas (and the welcome screen's drop halo), behind everything.
+
+**The Quiet Sky Rule.** The canvas stays dim enough that `label-2` keeps 4.5:1 on its brightest point, in both appearances. It moves only when the pointer does (`translate`, `scale`, `opacity`, nothing that repaints), settles within about two seconds, and holds still under Reduce Motion.
 
 **The Status Means Status Rule.** Green, orange, purple and gray belong to carry-over status. They never decorate, never mark selection, and always appear with a text label (pill, legend) beside the colour.
 
@@ -304,15 +325,17 @@ Each status has a fill hue (meter segments, legend dots, tinted pill backgrounds
 
 ## Layout
 
-A three-column window grid: sidebar (`sidebar-w`, 248px; 224px under 1240px wide), library (fluid), inspector (`inspector-w`, 344px; 312px under 1240px). Side panels sit inset by the 8px `gap` and float with an 18px radius; hiding the inspector collapses its track to 0 on a soft spring. A 52px `band` runs across the top: in the native app it is the title bar (the traffic lights sit in the sidebar's top, like Finder), and the toolbar overlays the library with a scroll-edge blur that appears once content slides under it.
+A three-column window grid: sidebar (`sidebar-w`: 248px on laptop screens, growing to 288px on big displays; 224px under 1240px wide), library (fluid), inspector (`inspector-w`: 344px, growing to 420px; 312px under 1240px). Side panels sit inset by the 8px `gap` and float with an 18px radius; hiding the inspector collapses its track to 0 on a soft spring. A 52px `band` runs across the top: in the native app it is the title bar (the traffic lights sit in the sidebar's top, like Finder), and the toolbar overlays the library with a scroll-edge blur that appears once content slides under it.
 
-The library is a grouped grid (`auto-fill, minmax(156px, 1fr)`, 14px gaps, 16:10 tiles) or a sortable list (40px rows, sticky glass header). The library pane is a size container: the list drops its smaller number columns under 860px and the group column under 560px; the selection bar collapses chips, then the summary, at 780 / 720 / 520px. The browser keeps 120px of bottom padding so the floating bar never covers the last row.
+The library is a grouped grid (`auto-fill`, tiles at least `clamp(156px, 12cqi, 248px)` so they grow with the pane on big displays; 14-22px gaps; 16:10 tiles) or a sortable list (40px rows, sticky glass header; the carry-over column stops at 240px). The library pane is a size container: the list drops its smaller number columns under 860px and the group column under 560px; the selection bar collapses chips, then the summary, at 780 / 720 / 520px. The browser keeps 120px of bottom padding so the floating bar never covers the last row.
 
-Window breakpoints: under 980px the inspector becomes an overlay sheet from the right; under 760px the sidebar becomes an overlay too, search collapses to an icon, tiles shrink to 140px; under 480px the view switch hides. The native window's minimum is 980 x 620.
+Window breakpoints: under 980px the inspector becomes an overlay sheet from the right; under 760px the sidebar becomes an overlay too, search collapses to an icon, tiles shrink to 140px; under 480px the view switch hides. The native window's minimum is 980 x 620, and it opens no bigger than the screen it is on.
+
+**Sheets** hang from the toolbar (`sheet-top`, `clamp(24px, 9vh, 88px)`) at `min(560px, 100vw - 48px)` wide (620px for the export sheet) and never taller than the window. Each has three parts: a head that stays put (title, path, tabs), a body that scrolls (content fades under the edges as it does), and a row of buttons with secondary actions on the left and the default button on the right. Every grid track is `minmax(0, 1fr)`, so long folder paths wrap (at any character) instead of widening the sheet; tabs share the width and shorten their labels, and drop their icons in a sheet under 420px.
 
 ## Elevation & Depth
 
-Depth is material, not shadow stacks. There are three levels: the window (solid `content`), panels that float on it (sidebar and inspector, solid with `panel-shadow` and a hairline), and glass that floats over everything (blur 26px + saturate 185%, a 1px `glass-edge`, an inset 1px `glass-hi` specular top edge, and the soft `glass-shadow`). In the native app the sidebar is a clear hole onto real `.sidebar` NSVisualEffectView vibrancy behind the transparent web view; in a browser it is a solid `sidebar-fill` panel. A pointer-following radial light (`.lit`) catches on the selection bar and the Masks button.
+Depth is material, not shadow stacks. There are three levels: the canvas (the dusk sky, `.aurora`), panels that float on it (sidebar and inspector: frosted `panel` with `panel-shadow`, a `glass-edge` hairline and a `glass-hi` top edge), and glass that floats over everything (blur 26px + saturate 185%, a 1px `glass-edge`, an inset 1px `glass-hi` specular top edge, and the soft `glass-shadow`). The page paints the canvas edge to edge in the native app and in a browser alike. The canvas's fields lean toward the pointer, each by a different amount (so the sky shifts in depth), swell slightly while the pointer is in the window, and a `glow` follows it; the panels frost all of it. A pointer-following radial light (`.lit`) also catches on the selection bar and the Masks button.
 
 ### Shadow Vocabulary
 - **Glass** (`0 18px 50px rgba(0,0,0,.42), 0 3px 10px rgba(0,0,0,.25)` dark; `0 18px 48px rgba(20,20,50,.16), 0 2px 8px rgba(20,20,50,.08)` light): selection bar, popovers, toasts, overlay panels.
@@ -324,7 +347,7 @@ Depth is material, not shadow stacks. There are three levels: the window (solid 
 ### Named Rules
 **The Glass Floats Rule.** Glass is for things that float over content. Content itself (tiles, rows, inspector cards) is never glass.
 
-**The Opaque Fallback Rule.** Under Reduce Transparency (system setting, or forwarded from macOS as `html.reduce-transparency`) all backdrop filters turn off and glass becomes `elevated`. The design must read fully without blur.
+**The Opaque Fallback Rule.** Under Reduce Transparency (system setting, or forwarded from macOS as `html.reduce-transparency`) all backdrop filters turn off and glass and panels become `elevated`. The design must read fully without blur.
 
 ## Shapes
 
@@ -341,7 +364,7 @@ Quiet, pill-shaped, pressable.
 - **Icon button / link:** borderless 28px circle in `label-2`; links in `accent-text`, underline on hover.
 
 ### Toolbar capsules and tools
-Glass pills grouping 34px circular controls (view switch, Add + Settings, search, inspector toggle). The view switch has a sliding thumb that springs between Grid and List. Search widens from 200 to 260px on focus with a blue ring. Pressed toggles turn their icon blue.
+Glass pills grouping 34px circular controls (view switch; Add, Recent Exports, Appearance and Settings; search; inspector toggle). The view switch has a sliding thumb that springs between Grid and List. The Appearance switch shows a moon in Dark and a sun in Light; the other icon turns away on a spring, the sun turns a quarter on hover, and a click spreads the other appearance out in a circle from the button (a view transition, 720ms; instant under Reduce Motion). Settings › Output keeps Auto / Light / Dark. Search widens from 200 to 260px on focus with a blue ring. Pressed toggles turn their icon blue.
 
 ### Preset tile (signature)
 A 16:10 computed swatch with a 14px radius, inner hairline and specular edge; name (560) and "NN% carries over" caption under it, then a 4px segmented mini meter in status colours. Hover lifts 2px; current gets a 3px solid blue ring, selected a 3px translucent ring. A frosted circular check appears top-left on hover or while selecting and fills blue when picked.
@@ -361,7 +384,7 @@ A 600px glass popover grown from the Masks button: three families of 38px mask t
 A 380px glass popover from the toolbar's clock button (which pops in after the first export). Rows: a 32px `accent-soft` tile with the mask icon, the presets ("Moody Teal and 1 other") over "into …" and the time, then reveal and Export Again icon buttons. An export whose file is gone greys its tile and disables reveal.
 
 ### Inspector
-An `elevated` panel: a 16:9 hero swatch with a blurred glow of itself beneath, the name, the rounded display percentage beside a drawn mini curve, an 8px segmented meter with legend, a destination card, and a table of settings each with a status pill. Content swaps by fading the old view out (120ms) and the new one in with a 6px rise (240ms).
+A frosted `panel`: a 16:9 hero swatch with a blurred glow of itself beneath, the name, the rounded display percentage beside a drawn mini curve, an 8px segmented meter with legend, a destination card, and a table of settings each with a status pill. Content swaps by fading the old view out (120ms) and the new one in with a 6px rise (240ms).
 
 ### Status pill
 11px/650 ink text with a 6px dot, on its status hue at 14-15%, 6px radius. Gray uses `fill-2`.
@@ -370,13 +393,14 @@ An `elevated` panel: a 16:9 hero swatch with a blurred glow of itself beneath, t
 Segmented and tab controls: a `fill-2` track, 10px radius, the selected segment raised on `content` with a small shadow. Switches are iOS-style 38 x 22 with a white knob that springs across. Text fields: 30px, 8px radius, `content` well, blue 3px focus ring.
 
 ### Sheets, toasts, menus
-Sheets drop in from above on a soft spring (glass-strong, 20px radius); the done sheet draws its green tick. Toasts are glass HUD pills at the top centre. Menus highlight the hovered item with `accent-fill` and white text, macOS style.
+Sheets drop in from above on a soft spring (glass-strong, 20px radius) and are sized as in Layout; the done sheet draws its green tick, and its path box has a copy button at its end. Settings rows put the source's name and its count on one line and its folder, wrapped, underneath; a folder that isn't on this Mac says so in `approx-ink`. Toasts are glass HUD pills at the top centre. Menus highlight the hovered item with `accent-fill` and white text, macOS style.
 
 ## Do's and Don'ts
 
 ### Do:
 - **Do** take every colour from the token set, in both appearances; add a light variant (with an accessible ink) for any new colour.
-- **Do** use glass (blur 26px + saturate 185%, `glass-edge` hairline, `glass-hi` top edge, `glass-shadow`) only for floating controls, bars, popovers, sheets and toasts.
+- **Do** use glass (blur 26px + saturate 185%, `glass-edge` hairline, `glass-hi` top edge, `glass-shadow`) only for floating controls, bars, popovers, sheets and toasts; the sidebar and inspector are frosted `panel`s on the canvas.
+- **Do** give every grid and flex track that holds text `minmax(0, 1fr)` / `min-width: 0`, and let paths wrap; nothing may widen a sheet or a popover past the window.
 - **Do** use `--spring` / `--spring-soft` (linear() springs with about 5% overshoot, cubic-bezier fallbacks) for arrivals and `--ease-in` at 120-180ms for exits.
 - **Do** keep fades and stop all travel under Reduce Motion; turn glass opaque under Reduce Transparency; strengthen separators under Increase Contrast.
 - **Do** show presets as computed swatches from `swatch.js`, and compute every percentage, count and status from the presets themselves.
@@ -393,3 +417,4 @@ Sheets drop in from above on a soft spring (glass-strong, 20px radius); the done
 - **Don't** use the status colours for decoration or selection, or show a status by colour alone.
 - **Don't** set labels in tracked uppercase or add kicker lines above titles.
 - **Don't** let anything travel or bounce when Reduce Motion is on.
+- **Don't** animate the canvas on its own: it answers the pointer and then rests.

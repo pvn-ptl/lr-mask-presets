@@ -44,8 +44,7 @@ const WALLPAPER = {
   light: "radial-gradient(60% 70% at 18% 22%, #9ec1ff 0%, transparent 70%), radial-gradient(55% 60% at 85% 18%, #e5b8f0 0%, transparent 70%), radial-gradient(70% 60% at 60% 95%, #ffc896 0%, transparent 70%), #eef1f8",
 };
 
-// The page leaves its sidebar clear for the window's vibrancy (NSVisualEffectView in main.swift).
-// Here a blurred, tinted copy of the desktop stands in for it, and the traffic lights are drawn on top.
+// A window on a desktop picture: the page paints its own canvas edge to edge, and the traffic lights are drawn on top.
 function frame({ theme, padded }) {
   const dark = theme === "dark";
   return `<!doctype html><meta charset="utf-8"><style>
@@ -53,10 +52,6 @@ html, body { margin: 0; height: 100%; }
 body { background: ${padded ? WALLPAPER[theme] : dark ? "#1d1d20" : "#fff"}; }
 .win { position: relative; width: ${W}px; height: ${H}px; margin: ${padded ? PAD : 0}px; overflow: hidden; isolation: isolate;
   ${padded ? `border-radius: 16px; box-shadow: 0 30px 80px rgba(0,0,0,${dark ? 0.55 : 0.28}), 0 0 0 1px rgba(${dark ? "255,255,255,.14" : "0,0,0,.12"});` : ""} }
-.material { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
-.material::before { content: ""; position: absolute; inset: -${padded ? PAD : 120}px; background: ${WALLPAPER[theme]}; filter: blur(48px) saturate(1.5);
-  ${padded ? `background-attachment: fixed;` : ""} }
-.material::after { content: ""; position: absolute; inset: 0; background: ${dark ? "rgba(30,30,34,.62)" : "rgba(246,246,248,.55)"}; }
 .lights { position: absolute; left: 20px; top: 20px; display: flex; gap: 8px; z-index: 2; }
 .lights i { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.22); }
 :root, iframe { color-scheme: ${theme}; }
@@ -65,7 +60,6 @@ iframe { display: block; border: 0; width: ${W}px; height: ${H}px; background: t
 #ripple { position: absolute; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; background: rgba(77,155,255,.45); pointer-events: none; opacity: 0; z-index: 9; transition: opacity .15s; }
 </style>
 <div class="win">
-  <div class="material"></div>
   <div class="lights"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
   <iframe id="app" src="/index.html?theme=${theme}" allowtransparency="true"></iframe>
   <div id="ripple"></div>
@@ -133,6 +127,9 @@ async function stills(page, base) {
 
 async function demo(page, base, work) {
   await openFrame(page, base, { theme: "dark", padded: false, scale: 1 });
+  // The canvas leans toward the pointer; in a GIF that changes every pixel of every frame (and multiplies the
+  // file size), so the demo holds it still.
+  await page.eval(inApp(`doc.head.append(Object.assign(doc.createElement("style"), { textContent: ".aurora i { translate: none !important; scale: none !important; transition: none !important; } .aurora .glow { display: none; }" }));`));
   await page.eval(inApp(`app.setView("grid"); app.setTargets(["background"]); app.show("Golden Hour Glow");`));
   await sleep(900);
   const frames = [];

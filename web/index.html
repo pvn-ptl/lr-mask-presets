@@ -10,6 +10,7 @@
 <script type="module" src="app.js"></script>
 </head>
 <body>
+<div class="aurora" id="aurora" aria-hidden="true"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="glow"></i></div>
 <div class="app" id="app">
   <div class="sidebar-column" id="sidebarColumn">
     <aside class="sidebar" id="sidebar" aria-label="Library">
@@ -36,6 +37,7 @@
         <div class="capsule">
           <button id="addButton" aria-haspopup="menu" aria-expanded="false" title="Add presets" aria-label="Add presets"><span data-icon="plus"></span></button>
           <button id="historyButton" aria-haspopup="dialog" aria-expanded="false" title="Recent exports" aria-label="Recent exports" hidden><span data-icon="history"></span></button>
+          <button id="toggleTheme" title="Switch to Light Appearance" aria-label="Switch to light appearance"><span class="theme-icon"><span class="sun" data-icon="sun"></span><span class="moon" data-icon="moon"></span></span></button>
           <button id="openSettings" title="Settings" aria-label="Settings"><span data-icon="gear"></span></button>
         </div>
         <label class="search capsule">
