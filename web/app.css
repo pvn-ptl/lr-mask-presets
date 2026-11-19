@@ -13,6 +13,9 @@
   --panel-shadow: 0 10px 30px rgba(0, 0, 0, .28), 0 1px 3px rgba(0, 0, 0, .25);
   --blur: blur(26px) saturate(185%);
   --scrim: rgba(0, 0, 0, .42);
+  /* The canvas behind the window: a dusk sky (blue overhead, violet, a low ember), lit where the pointer is. */
+  --canvas: #111216; --aurora-1: rgba(64, 102, 232, .34); --aurora-2: rgba(150, 70, 196, .30); --aurora-3: rgba(222, 112, 58, .22);
+  --glow: rgba(118, 160, 255, .10); --panel: rgba(28, 29, 34, .56);
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
   --rounded: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
@@ -20,7 +23,9 @@
   --ease-in: cubic-bezier(.5, 0, .9, .4);
   --spring: cubic-bezier(.22, 1.18, .36, 1);
   --spring-soft: cubic-bezier(.2, 1.02, .3, 1);
-  --sidebar-w: 248px; --inspector-w: 344px; --gap: 8px; --band: 52px;
+  /* Side panels keep their size on laptop screens and grow a little on big displays. */
+  --sidebar-w: clamp(248px, 8vw + 120px, 288px); --inspector-w: clamp(344px, 10vw + 184px, 420px); --gap: 8px; --band: 52px;
+  --sheet-top: clamp(24px, 9vh, 88px);
   color-scheme: dark;
 }
 @supports (transition-timing-function: linear(0, 1)) {
@@ -42,6 +47,8 @@
     --glass-shadow: 0 18px 48px rgba(20, 20, 50, .16), 0 2px 8px rgba(20, 20, 50, .08);
     --panel-shadow: 0 8px 26px rgba(20, 20, 50, .09), 0 1px 2px rgba(20, 20, 50, .08);
     --scrim: rgba(30, 30, 40, .2);
+    --canvas: #f1f2f7; --aurora-1: rgba(104, 156, 255, .34); --aurora-2: rgba(212, 146, 240, .30); --aurora-3: rgba(255, 172, 116, .30);
+    --glow: rgba(255, 255, 255, .62); --panel: rgba(255, 255, 255, .5);
     color-scheme: light;
   }
 }
@@ -57,6 +64,8 @@
   --glass-shadow: 0 18px 48px rgba(20, 20, 50, .16), 0 2px 8px rgba(20, 20, 50, .08);
   --panel-shadow: 0 8px 26px rgba(20, 20, 50, .09), 0 1px 2px rgba(20, 20, 50, .08);
   --scrim: rgba(30, 30, 40, .2);
+  --canvas: #f1f2f7; --aurora-1: rgba(104, 156, 255, .34); --aurora-2: rgba(212, 146, 240, .30); --aurora-3: rgba(255, 172, 116, .30);
+  --glow: rgba(255, 255, 255, .62); --panel: rgba(255, 255, 255, .5);
   color-scheme: light;
 }
 
@@ -65,7 +74,7 @@
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
 body {
-  background: var(--content); color: var(--label); font: 13px/1.4 var(--font); letter-spacing: -.003em;
+  background: var(--canvas); color: var(--label); font: 13px/1.4 var(--font); letter-spacing: -.003em;
   overflow: hidden; -webkit-font-smoothing: antialiased; -webkit-user-select: none; user-select: none; cursor: default;
 }
 input, textarea, .selectable { -webkit-user-select: text; user-select: text; }
@@ -82,6 +91,41 @@ input { caret-color: var(--accent); }
 ::-webkit-scrollbar-thumb:hover { background-color: var(--label-3); }
 .icon { display: inline-flex; flex: none; }
 .icon svg { display: block; }
+
+/* The canvas: three soft colour fields under everything. They lean toward the pointer (each by a different
+   amount, so the sky shifts in depth), swell a little while the pointer is in the window, and a light follows it.
+   Only `translate`/`scale`/`opacity` move, so nothing repaints and it costs nothing while the pointer rests. */
+.aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: var(--canvas); contain: strict; }
+.aurora i {
+  position: absolute; border-radius: 50%; will-change: translate;
+  transition: translate 1.8s var(--ease-out), scale 2.4s var(--ease-out), opacity .8s var(--ease-out);
+}
+/* Placed over the library pane, where the canvas shows: blue overhead, violet to the right, an ember rising from
+   the bottom. Centres follow the window's width (vw); sizes follow its longer side (vmax). */
+.aurora .a1 {
+  width: 80vmax; height: 80vmax; left: calc(42vw - 40vmax); top: -50vmax; translate: calc(var(--px, 0) * 3.4vmax) calc(var(--py, 0) * 2.6vmax);
+  background: radial-gradient(closest-side, var(--aurora-1), color-mix(in srgb, var(--aurora-1) 45%, transparent) 55%, transparent);
+}
+.aurora .a2 {
+  width: 64vmax; height: 64vmax; left: calc(88vw - 32vmax); top: calc(42vh - 32vmax); translate: calc(var(--px, 0) * -2.8vmax) calc(var(--py, 0) * 2.2vmax); transition-duration: 2.3s, 2.8s, .8s;
+  background: radial-gradient(closest-side, var(--aurora-2), color-mix(in srgb, var(--aurora-2) 45%, transparent) 55%, transparent);
+}
+.aurora .a3 {
+  width: 72vmax; height: 72vmax; left: calc(34vw - 36vmax); top: calc(100vh - 22vmax); translate: calc(var(--px, 0) * 2.2vmax) calc(var(--py, 0) * -3.2vmax); transition-duration: 2.8s, 3.2s, .8s;
+  background: radial-gradient(closest-side, var(--aurora-3), color-mix(in srgb, var(--aurora-3) 45%, transparent) 55%, transparent);
+}
+.aurora .glow {
+  width: 56vmax; height: 56vmax; left: -28vmax; top: -28vmax; translate: var(--gx, 50vw) var(--gy, 40vh); opacity: 0; transition-duration: 1s, 2.4s, .8s;
+  background: radial-gradient(closest-side, var(--glow), color-mix(in srgb, var(--glow) 35%, transparent) 50%, transparent);
+}
+html.pointer-in .aurora .glow { opacity: 1; }
+html.pointer-in .aurora .a1, html.pointer-in .aurora .a3 { scale: 1.07; }
+html.pointer-in .aurora .a2 { scale: 1.1; }
+/* Fine grain, so the soft gradients don't band on 8-bit displays. */
+.aurora::after {
+  content: ""; position: absolute; inset: 0; opacity: .045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
 .muted { color: var(--label-2); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 [hidden] { display: none !important; }
@@ -133,18 +177,12 @@ html.settled .app { transition: grid-template-columns .45s var(--spring-soft); }
 .inspector-column { padding: var(--gap) var(--gap) var(--gap) 0; }
 .content { grid-column: 2; position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; container: content / inline-size; }
 
-/* The sidebar floats over the window. In the Mac app the window behind it is real macOS vibrancy (see main.swift),
-   so the panel is a clear hole in the page; the ring of content colour around it is drawn by its spread shadow. */
+/* The sidebar and the inspector float over the canvas as frosted panels. */
 .sidebar {
-  height: 100%; display: flex; flex-direction: column; border-radius: 18px; background: var(--sidebar-fill);
-  box-shadow: var(--panel-shadow), 0 0 0 400px var(--content); border: 1px solid var(--separator);
+  height: 100%; display: flex; flex-direction: column; border-radius: 18px; background: var(--panel);
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-hi), var(--panel-shadow);
 }
-html.native .sidebar {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
-  border-color: var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-hi), var(--panel-shadow), 0 0 0 400px var(--content);
-}
-html.native body { background: transparent; }
-html.native .content, html.native .inspector-column { background: var(--content); }
 
 .sidebar-top { height: calc(var(--band) - var(--gap)); flex: none; display: flex; align-items: center; padding: 0 14px; }
 .app-mark { display: flex; align-items: center; gap: 9px; font-weight: 650; font-size: 13px; color: var(--label); white-space: nowrap; overflow: hidden; }
@@ -185,7 +223,7 @@ html.native .app-mark { display: none; } /* the traffic lights live here */
 /* Scroll edge: content blurs as it slides under the toolbar. */
 .toolbar::before {
   content: ""; position: absolute; inset: 0 0 -18px; z-index: -1; pointer-events: none;
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--content) 82%, transparent), color-mix(in srgb, var(--content) 0%, transparent));
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--canvas) 72%, transparent), color-mix(in srgb, var(--canvas) 0%, transparent));
   -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
   -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent); mask-image: linear-gradient(to bottom, #000 55%, transparent);
   opacity: 0; transition: opacity .25s;
@@ -205,6 +243,12 @@ html.native .app-mark { display: none; } /* the traffic lights live here */
 .capsule > button:active { transform: scale(.9); transition-duration: .08s; }
 .capsule > button[aria-expanded="true"] { background: var(--fill-3); }
 .view-switch > button { color: var(--label-2); }
+/* Sun in light, moon in dark; the other one turns away. */
+.theme-icon { display: grid; }
+.theme-icon > span { grid-area: 1 / 1; display: grid; transition: opacity .2s var(--ease-out), transform .6s var(--spring); }
+[data-scheme="dark"] .theme-icon .sun, [data-scheme="light"] .theme-icon .moon { opacity: 0; transform: rotate(-80deg) scale(.4); }
+#toggleTheme:hover .sun .icon { animation: sun-turn 1.6s var(--ease-out); }
+@keyframes sun-turn { to { transform: rotate(90deg); } }
 .view-switch > button[aria-checked="true"] { color: var(--label); background: none; }
 .view-switch .thumb {
   position: absolute; z-index: 0; top: 2px; left: 2px; width: 34px; height: 28px; border-radius: 99px; background: var(--fill-3);
@@ -235,7 +279,8 @@ html.native .app-mark { display: none; } /* the traffic lights live here */
 .tile-group-head .count { color: var(--label-2); font-size: 12px; font-variant-numeric: tabular-nums; }
 .tile-group-head .link { margin-left: auto; font-size: 12px; opacity: 0; transition: opacity .15s; }
 .tile-group:hover .tile-group-head .link, .tile-group-head .link:focus-visible { opacity: 1; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(156px, 1fr)); gap: 14px; }
+/* Thumbnails grow with the pane on big displays instead of turning into a wall of stamps. */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(156px, 12cqi, 248px), 1fr)); gap: clamp(14px, 1.2cqi, 22px); }
 
 .tile { position: relative; border-radius: 14px; outline: none; }
 .tile-face {
@@ -270,7 +315,7 @@ html.native .app-mark { display: none; } /* the traffic lights live here */
 .tag { font-size: 10.5px; font-weight: 600; color: var(--label-2); background: var(--fill-2); border-radius: 5px; padding: 0 5px; white-space: nowrap; }
 
 /* list view */
-.list-view { --cols: 30px 44px minmax(140px, 2.2fr) minmax(90px, 1.2fr) minmax(130px, 1.5fr) 46px 56px 60px; }
+.list-view { --cols: 30px 44px minmax(140px, 2.2fr) minmax(90px, 1.2fr) minmax(130px, 240px) 46px 56px 60px; }
 /* Narrower library panes drop the smaller number columns, then the group (hidden cells take no grid track). */
 @container content (max-width: 860px) {
   .list-view { --cols: 30px 44px minmax(120px, 2fr) minmax(80px, 1fr) minmax(120px, 1.3fr) 46px; }
@@ -338,7 +383,10 @@ html.native .app-mark { display: none; } /* the traffic lights live here */
 .drop-target p { margin: 0; color: var(--label-2); max-width: 52ch; font-size: 13.5px; text-wrap: pretty; }
 .found { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
 .steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; counter-reset: step; }
-.steps li { display: grid; gap: 4px; align-content: start; padding: 14px 16px; border-radius: 18px; background: var(--elevated); border: 1px solid var(--separator); }
+.steps li {
+  display: grid; gap: 4px; align-content: start; padding: 14px 16px; border-radius: 18px; background: var(--panel);
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-hi);
+}
 .steps li::before { counter-increment: step; content: counter(step); font: 700 12px var(--rounded); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); margin-bottom: 4px; }
 .steps b { font-weight: 600; }
 .steps span { color: var(--label-2); font-size: 12.5px; }
@@ -401,7 +449,8 @@ html.native .app-mark { display: none; } /* the traffic lights live here */
 /* ---------- inspector ---------- */
 
 .inspector {
-  height: 100%; border-radius: 18px; background: var(--elevated); border: 1px solid var(--separator); box-shadow: var(--panel-shadow);
+  height: 100%; border-radius: 18px; background: var(--panel); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-hi), var(--panel-shadow);
   overflow: hidden; display: flex; flex-direction: column; transition: opacity .3s, transform .45s var(--spring-soft);
 }
 .app.no-inspector .inspector { opacity: 0; transform: translateX(30px); pointer-events: none; }
@@ -443,7 +492,7 @@ html.native .app-mark { display: none; } /* the traffic lights live here */
 .notice { display: flex; gap: 9px; align-items: flex-start; margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--approx) 13%, transparent); border: 1px solid color-mix(in srgb, var(--approx) 35%, transparent); font-size: 12.5px; }
 .notice .icon { color: var(--approx-ink); margin-top: 1px; }
 .section-title { font-size: 11px; font-weight: 650; color: var(--label-3); margin: 20px 4px 7px; }
-.rows-card { border-radius: 12px; background: var(--content); border: 1px solid var(--separator); overflow: hidden; }
+.rows-card { border-radius: 12px; background: color-mix(in srgb, var(--content) 55%, transparent); border: 1px solid var(--separator); overflow: hidden; }
 table.rows { width: 100%; border-collapse: collapse; }
 table.rows td { padding: 8px 12px; vertical-align: top; border-bottom: 1px solid var(--separator); }
 table.rows tr:last-child td, table.rows tr.has-note td { border-bottom: 0; }
@@ -605,37 +654,69 @@ input[type="checkbox"]:not(.switch) { accent-color: var(--accent); width: 15px; 
 
 /* ---------- sheets ---------- */
 
+/* Sheets hang from the toolbar like a Mac sheet, are as wide as their content needs (up to --sheet-w), never
+   wider than the window, and never taller: the head and the buttons stay put while the body scrolls. */
 dialog {
-  border: 1px solid var(--glass-edge); border-radius: 20px; padding: 0; color: var(--label); width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 64px);
+  --sheet-w: 560px;
+  border: 1px solid var(--glass-edge); border-radius: 20px; padding: 0; color: var(--label);
+  width: min(var(--sheet-w), calc(100vw - 48px)); max-width: none; max-height: calc(100vh - var(--sheet-top) - 24px); margin: var(--sheet-top) auto auto;
   background: var(--glass-strong); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, .4), inset 0 1px 0 var(--glass-hi); overflow: auto;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .4), inset 0 1px 0 var(--glass-hi); overflow: hidden; container: sheet / inline-size;
 }
-dialog[open] { animation: sheet-in .55s var(--spring-soft) both; }
+dialog:has(> .sheet.wide) { --sheet-w: 620px; }
+dialog[open] { display: flex; flex-direction: column; animation: sheet-in .55s var(--spring-soft) both; }
 dialog.closing { animation: sheet-out .18s var(--ease-in) both; }
 dialog::backdrop { background: var(--scrim); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); animation: fade-in .3s var(--ease-out); }
 @keyframes sheet-in { from { opacity: 0; transform: translateY(-26px) scale(.97); } }
 @keyframes sheet-out { to { opacity: 0; transform: translateY(-10px) scale(.98); } }
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes fade-out { to { opacity: 0; } }
-.sheet { padding: 22px 24px 20px; display: grid; gap: 14px; }
+.sheet { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; }
+.sheet-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 22px 24px 0; }
+/* Content fades under the head and the buttons as it scrolls; at rest the fade falls in the padding. */
+.sheet-body {
+  display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 12px; min-height: 0; overflow: auto; overscroll-behavior: contain;
+  padding: 14px 24px; -webkit-mask-image: linear-gradient(transparent, #000 14px, #000 calc(100% - 14px), transparent); mask-image: linear-gradient(transparent, #000 14px, #000 calc(100% - 14px), transparent);
+}
+.sheet-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; padding: 2px 24px 20px; }
+.foot-start { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-right: auto; }
+.foot-start:empty { display: none; }
+.sheet-foot .button { flex: none; }
+@container sheet (max-width: 420px) {
+  .sheet-head { padding: 18px 18px 0; }
+  .sheet-body { padding-inline: 18px; }
+  .sheet-foot { padding: 2px 18px 16px; }
+  .tabs .icon { display: none; }
+}
 .sheet h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.016em; display: flex; align-items: center; gap: 12px; }
 .sheet .ok { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--exact) 20%, transparent); color: var(--exact-ink); animation: ok-pop .6s var(--spring) both .1s; }
 .sheet .ok svg path { stroke-dasharray: 30; stroke-dashoffset: 30; animation: tick .5s var(--ease-out) forwards .35s; }
 @keyframes ok-pop { from { transform: scale(.3); opacity: 0; } }
 @keyframes tick { to { stroke-dashoffset: 0; } }
-.sheet .path { font: 11.5px var(--mono); background: var(--fill); border: 1px solid var(--separator); border-radius: 10px; padding: 9px 11px; word-break: break-all; }
+.sheet .path { display: flex; align-items: flex-start; gap: 6px; font: 11.5px/1.45 var(--mono); background: var(--fill); border: 1px solid var(--separator); border-radius: 10px; padding: 8px 6px 8px 11px; }
+.sheet .path > span { flex: 1; min-width: 0; padding-top: 1px; overflow-wrap: anywhere; }
+.sheet .path .icon-button { flex: none; width: 24px; height: 24px; margin: -2px 0; }
 .sheet ol { margin: 0; padding-left: 20px; display: grid; gap: 7px; }
 .sheet ol li::marker { color: var(--label-3); font-variant-numeric: tabular-nums; }
-.sheet .actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
 .sheet details summary { cursor: default; }
-.tabs { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--fill-2); border-radius: 10px; padding: 2px; gap: 2px; }
-.tabs button { border: 0; background: none; height: 28px; padding: 0 10px; border-radius: 8px; color: var(--label-2); font-weight: 560; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+.tabs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); background: var(--fill-2); border-radius: 10px; padding: 2px; gap: 2px; }
+.tabs button { min-width: 0; border: 0; background: none; height: 28px; padding: 0 10px; border-radius: 8px; color: var(--label-2); font-weight: 560; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+.tabs .icon { flex: none; }
+.tab-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .tabs button[aria-selected="true"] { color: var(--label); background: var(--content); box-shadow: 0 1px 3px rgba(0, 0, 0, .18), 0 0 0 .5px var(--separator); }
-.settings-list { display: grid; gap: 6px; }
+.settings-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.settings-list.about { gap: 10px; }
+.settings-list p { margin: 0; }
 .settings-row { display: flex; gap: 10px; align-items: center; padding: 9px 11px; border-radius: 12px; background: var(--fill); }
 .settings-row > .icon { color: var(--accent-text); }
 .settings-row .grow { flex: 1; min-width: 0; }
-.settings-row .grow small { display: block; color: var(--label-2); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-title { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; }
+.row-label { font-weight: 520; overflow-wrap: anywhere; }
+.row-status { color: var(--label-2); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.settings-row.missing .row-status { color: var(--approx-ink); }
+/* Folders wrap at any character (they have no spaces to break at) instead of running off the sheet. */
+.row-path { display: block; margin-top: 1px; color: var(--label-3); font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
+.row-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; flex: none; }
 .settings-row .segmented { grid-template-columns: repeat(3, auto); }
 
 /* ---------- feedback ---------- */
@@ -657,7 +738,7 @@ dialog::backdrop { background: var(--scrim); -webkit-backdrop-filter: blur(3px);
 body.dragging .drop-overlay { opacity: 1; visibility: visible; transition: opacity .2s; }
 body.dragging .drop-card { transform: scale(1); }
 
-.loading { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: var(--content); transition: opacity .35s var(--ease-out), visibility 0s .35s; }
+.loading { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: var(--canvas); transition: opacity .35s var(--ease-out), visibility 0s .35s; }
 .loading.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 .loading.hidden .spinner { animation: none; }
 .loading-card { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 99px; color: var(--label-2); font-weight: 520; }
@@ -668,6 +749,10 @@ body.dragging .drop-card { transform: scale(1); }
 ::view-transition-group(*) { animation-duration: .5s; animation-timing-function: var(--spring-soft); }
 ::view-transition-old(*), ::view-transition-new(*) { animation-duration: .22s; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .18s; animation-timing-function: var(--ease-out); }
+/* Switching appearance: the new look spreads out from the switch (the clip is animated from app.js). */
+html.theme-swap * { view-transition-name: none !important; }
+html.theme-swap::view-transition-old(root), html.theme-swap::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html.theme-swap::view-transition-new(root) { z-index: 1; }
 
 /* ---------- accessibility settings ---------- */
 
@@ -683,6 +768,8 @@ body.dragging .drop-card { transform: scale(1); }
   .inspector-scroll.swap { animation: fade-in .16s ease-out both !important; }
   .inspector-scroll.leaving { animation: fade-out .1s ease-in forwards !important; }
   .mp-page.forward, .mp-page.back { animation: fade-in .16s ease-out both !important; }
+  .aurora i { translate: none !important; scale: none !important; }
+  .aurora .glow { display: none; }
   .sidebar, .inspector, .view-switch .thumb, .toast, .drop-card, .tile-face, .button, .masks-button, .target {
     transition-property: opacity, background-color, color, border-color, box-shadow !important;
   }
@@ -690,10 +777,9 @@ body.dragging .drop-card { transform: scale(1); }
 html.reduce-transparency, html.reduce-transparency * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 @media (prefers-reduced-transparency: reduce) {
   * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
-  :root { --glass: var(--elevated); --glass-strong: var(--elevated); }
+  :root { --glass: var(--elevated); --glass-strong: var(--elevated); --panel: var(--elevated); }
 }
-html.reduce-transparency { --glass: var(--elevated); --glass-strong: var(--elevated); }
-html.reduce-transparency.native .sidebar { background: var(--sidebar-fill); }
+html.reduce-transparency { --glass: var(--elevated); --glass-strong: var(--elevated); --panel: var(--elevated); }
 @media (prefers-contrast: more) {
   :root { --separator: rgba(128, 128, 128, .5); --separator-strong: rgba(128, 128, 128, .7); --glass-edge: rgba(128, 128, 128, .6); --label-2: var(--label); }
 }
@@ -730,5 +816,5 @@ html.reduce-transparency.native .sidebar { background: var(--sidebar-fill); }
   .steps { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {
-  .view-switch, .toolbar-actions > .capsule:nth-child(2) { display: none; }
+  .view-switch { display: none; }
 }

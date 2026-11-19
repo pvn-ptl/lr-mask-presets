@@ -1440,9 +1440,30 @@ function closeDialog() {
 }
 
 function tabs(items, selected, onSelect) {
-  return h("div", { class: "tabs", role: "tablist" }, items.map(([id, label, iconName]) => h("button", {
-    role: "tab", "aria-selected": String(id === selected), onclick: () => onSelect(id),
-  }, iconName ? icon(iconName, 15) : null, label)));
+  // Switching redraws the sheet; keep focus on the tab that was chosen. Arrow keys move between tabs.
+  const choose = (id) => { onSelect(id); $("dialog").querySelector(`[role=tab][data-tab="${id}"]`)?.focus(); };
+  const ids = items.map(([id]) => id);
+  return h("div", {
+    class: "tabs", role: "tablist", onkeydown: (ev) => {
+      const step = { ArrowRight: 1, ArrowLeft: -1 }[ev.key];
+      if (!step) return;
+      ev.preventDefault();
+      choose(ids[(ids.indexOf(selected) + step + ids.length) % ids.length]);
+    },
+  }, items.map(([id, label, iconName]) => h("button", {
+    role: "tab", "data-tab": id, "aria-selected": String(id === selected), tabindex: id === selected ? "0" : "-1", onclick: () => choose(id),
+  }, iconName ? icon(iconName, 15) : null, h("span", { class: "tab-label", text: label }))));
+}
+
+/**
+ * A sheet: a head that stays put (title, tabs), a body that scrolls when the window is short, and a row of
+ * buttons: secondary actions on the left, the default button on the right.
+ */
+function sheet({ head, body, start = [], actions, wide = false }) {
+  return h("div", { class: `sheet${wide ? " wide" : ""}` },
+    h("div", { class: "sheet-head" }, head),
+    h("div", { class: "sheet-body" }, body),
+    h("div", { class: "sheet-foot" }, h("div", { class: "foot-start" }, start), actions));
 }
 
 function showDone(result, files, skipped, tab = state.apps.cloud === false && state.apps.classic ? "classic" : "cloud") {
@@ -1473,14 +1494,23 @@ function showDone(result, files, skipped, tab = state.apps.cloud === false && st
       `Pick “${zipName}”.`,
     ],
   };
-  const draw = (current) => openDialog(h("div", { class: "sheet" },
-    h("h2", null, h("span", { class: "ok" }, icon("check", 18)), `${plural(files.length, "preset")} ready`),
-    native && result.folder ? h("div", { class: "path selectable", text: zip || result.folder }) : h("p", { class: "muted", text: `Downloaded ${zipName}.` }),
-    skipped.length ? h("details", null, h("summary", { class: "muted", text: `${plural(skipped.length, "preset")} skipped` }),
-      h("ul", null, skipped.map((s) => h("li", { class: "muted", text: `${s.name}: ${s.reason}` })))) : null,
-    tabs([["cloud", "Lightroom", "cloud-photos"], ["classic", "Lightroom Classic", "desktop-photos"], ["acr", "Camera Raw", "camera"]], current, (id) => draw(id)),
-    h("ol", null, steps[current].map((s) => h("li", { text: s }))),
-    h("div", { class: "actions" },
+  const where = zip || result.folder || "";
+  const draw = (current) => openDialog(sheet({
+    wide: true,
+    head: [
+      h("h2", null, h("span", { class: "ok" }, icon("check", 18)), `${plural(files.length, "preset")} ready`),
+      native && result.folder ? h("div", { class: "path" },
+        h("span", { class: "selectable", text: where }),
+        h("button", { class: "icon-button", title: "Copy Path", "aria-label": "Copy path", onclick: () => { platform.copyText(where); toast("Path copied"); } }, icon("copy", 15)))
+        : h("p", { class: "muted", text: `Downloaded ${zipName}.` }),
+      tabs([["cloud", "Lightroom", "cloud-photos"], ["classic", "Lightroom Classic", "desktop-photos"], ["acr", "Camera Raw", "camera"]], current, (id) => draw(id)),
+    ],
+    body: [
+      h("ol", null, steps[current].map((s) => h("li", { text: s }))),
+      skipped.length ? h("details", null, h("summary", { class: "muted", text: `${plural(skipped.length, "preset")} skipped` }),
+        h("ul", null, skipped.map((s) => h("li", { class: "muted", text: `${s.name}: ${s.reason}` })))) : null,
+    ],
+    start: [
       native && current !== "cloud" ? h("button", {
         class: "button", onclick: async (ev) => {
           ev.currentTarget.disabled = true;
@@ -1488,58 +1518,77 @@ function showDone(result, files, skipped, tab = state.apps.cloud === false && st
           toast(r?.error ? r.error : `Installed ${plural(r.count, "preset")}. Restart Lightroom Classic or Photoshop to see them.`, Boolean(r?.error));
         },
       }, icon("download", 15), "Install for Classic & Camera Raw") : null,
-      native ? h("button", { class: "button", onclick: () => platform.reveal(zip || result.folder) }, icon("reveal", 15), "Show in Finder") : null,
-      native ? h("button", { class: "button", onclick: () => { platform.copyText(zip); toast("Path copied"); } }, "Copy Path") : null,
+      native ? h("button", { class: "button", onclick: () => platform.reveal(where) }, icon("reveal", 15), "Show in Finder") : null,
       native && current === "cloud" ? h("button", {
         class: "button", onclick: async () => { const r = await platform.openLightroom(); if (r?.error) toast(r.error, true); },
       }, icon("cloud-photos", 15), "Open Lightroom") : null,
-      h("button", { class: "button primary", onclick: closeDialog, autofocus: true }, "Done"))));
+    ],
+    actions: h("button", { class: "button primary", onclick: closeDialog, autofocus: true }, "Done"),
+  }));
   draw(tab);
 }
 
 function showSettings(tab = "sources") {
-  const body = {
-    sources: () => h("div", { class: "settings-list" },
-      state.sources.length ? state.sources.map((s) => {
-        const usable = s.entries.filter((e) => !core.isConverted(e.preset)).length;
-        const status = s.available === false ? "Not found on this Mac" : `${plural(usable, "preset")}${s.errors.length ? ` · ${s.errors.length} unreadable` : ""}`;
-        return h("div", { class: "settings-row" },
-          icon(SOURCE_ICONS[s.kind] || "folder"),
-          h("div", { class: "grow" }, h("div", { text: s.label }), h("small", { class: "selectable", text: s.path ? `${s.path.replace(/^\/Users\/[^/]+/, "~")} · ${status}` : status, title: [s.path, ...s.errors.slice(0, 20)].filter(Boolean).join("\n") })),
-          s.removable ? h("button", { class: "icon-button", title: "Remove", "aria-label": `Remove ${s.label}`, onclick: () => { removeSource(s.key); showSettings("sources"); } }, icon("close", 14)) : null,
-          h("input", {
-            type: "checkbox", class: "switch", role: "switch", checked: s.enabled, disabled: s.available === false, "aria-label": `Use ${s.label}`,
-            onchange: (ev) => { s.enabled = ev.target.checked; rebuild(); saveSettings(); render(); },
-          }));
-      }) : h("p", { class: "muted", text: "No sources yet." }),
-      h("div", { class: "actions" },
+  const home = (path) => String(path).replace(/^\/Users\/[^/]+/, "~");
+  // Label and status on one line; the folder underneath, wrapping wherever it has to.
+  const describe = (label, status, path, title) => h("div", { class: "grow", title: title || null },
+    h("div", { class: "row-title" }, h("span", { class: "row-label", text: label }), status ? h("span", { class: "row-status", text: status }) : null),
+    path ? h("small", { class: "row-path selectable", text: home(path) }) : null);
+  const pages = {
+    sources: () => ({
+      body: h("div", { class: "settings-list" },
+        state.sources.length ? state.sources.map((s) => {
+          const usable = s.entries.filter((e) => !core.isConverted(e.preset)).length;
+          const status = s.available === false ? "Not found on this Mac" : `${plural(usable, "preset")}${s.errors.length ? ` · ${s.errors.length} unreadable` : ""}`;
+          return h("div", { class: `settings-row${s.available === false ? " missing" : ""}` },
+            icon(SOURCE_ICONS[s.kind] || "folder"),
+            describe(s.label, status, s.path, [s.path, ...s.errors.slice(0, 20)].filter(Boolean).join("\n")),
+            s.removable ? h("button", { class: "icon-button", title: "Remove", "aria-label": `Remove ${s.label}`, onclick: () => { removeSource(s.key); showSettings("sources"); } }, icon("close", 14)) : null,
+            h("input", {
+              type: "checkbox", class: "switch", role: "switch", checked: s.enabled, disabled: s.available === false, "aria-label": `Use ${s.label}`,
+              onchange: (ev) => { s.enabled = ev.target.checked; rebuild(); saveSettings(); render(); },
+            }));
+        }) : h("p", { class: "muted", text: "No sources yet." })),
+      start: [
         native ? h("button", { class: "button", onclick: async () => { closeDialog(); setLoading("Looking for your presets…"); await scan(); hideLoading(); render(); } }, icon("refresh", 15), "Look Again") : null,
-        h("button", { class: "button", onclick: async () => { closeDialog(); await addFolder(); } }, icon("folder", 15), "Add Folder…"))),
-    output: () => h("div", { class: "settings-list" },
-      native ? h("div", { class: "settings-row" }, icon("folder"),
-        h("div", { class: "grow" }, h("div", { text: "Save new presets in" }), h("small", { class: "selectable", text: state.outputFolder })),
-        h("button", { class: "button", onclick: () => platform.reveal(state.outputFolder) }, "Show"),
-        h("button", { class: "button", onclick: async () => { const r = await platform.chooseOutputFolder(); if (r?.outputFolder) { state.outputFolder = r.outputFolder; render(); showSettings("output"); } } }, "Change…"))
-        : h("p", { class: "muted", text: "In the browser, new presets download as a .zip." }),
-      h("div", { class: "settings-row" }, icon("sparkle"),
-        h("div", { class: "grow" }, h("div", { text: "Appearance" })),
-        h("div", { class: "segmented" },
-          ...[["system", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(([v, label]) => h("button", {
-            "aria-pressed": String((state.settings.theme || "system") === v),
-            onclick: () => { state.settings.theme = v; applyTheme(); saveSettings(); showSettings("output"); },
-          }, label))))),
-    about: () => h("div", { class: "settings-list" },
-      h("p", null, h("b", { text: "LR Mask Presets" }), document.documentElement.dataset.version ? ` ${document.documentElement.dataset.version}` : ""),
-      h("p", { class: "muted", text: "Turns Lightroom presets into presets that apply the look inside an AI mask: background, subject, sky, people, landscape parts and more." }),
-      h("p", { class: "muted", text: "Private by design: presets are read on this computer and never uploaded. The app makes no network requests. It only reads Lightroom's folders; it never changes them." }),
-      h("p", { class: "muted", text: "Not made by or affiliated with Adobe. Lightroom is a trademark of Adobe." }),
-      h("button", { class: "link", text: "Project page on GitHub", onclick: () => platform.openURL("https://github.com/pvn-ptl/lr-mask-presets") })),
+        h("button", { class: "button", onclick: async () => { closeDialog(); await addFolder(); } }, icon("folder", 15), "Add Folder…"),
+      ],
+    }),
+    output: () => ({
+      body: h("div", { class: "settings-list" },
+        native ? h("div", { class: "settings-row" }, icon("folder"),
+          describe("Save new presets in", "", state.outputFolder, state.outputFolder),
+          h("div", { class: "row-buttons" },
+            h("button", { class: "button", onclick: () => platform.reveal(state.outputFolder) }, "Show"),
+            h("button", { class: "button", onclick: async () => { const r = await platform.chooseOutputFolder(); if (r?.outputFolder) { state.outputFolder = r.outputFolder; render(); showSettings("output"); } } }, "Change…")))
+          : h("p", { class: "muted", text: "In the browser, new presets download as a .zip." }),
+        h("div", { class: "settings-row" }, icon("sparkle"),
+          describe("Appearance"),
+          h("div", { class: "segmented" },
+            ...[["system", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(([v, label]) => h("button", {
+              "aria-pressed": String((state.settings.theme || "system") === v),
+              onclick: () => { setTheme(v); showSettings("output"); },
+            }, label))))),
+    }),
+    about: () => ({
+      body: h("div", { class: "settings-list about" },
+        h("p", null, h("b", { text: "LR Mask Presets" }), document.documentElement.dataset.version ? ` ${document.documentElement.dataset.version}` : ""),
+        h("p", { class: "muted", text: "Turns Lightroom presets into presets that apply the look inside an AI mask: background, subject, sky, people, landscape parts and more." }),
+        h("p", { class: "muted", text: "Private by design: presets are read on this computer and never uploaded. The app makes no network requests. It only reads Lightroom's folders; it never changes them." }),
+        h("p", { class: "muted", text: "Not made by or affiliated with Adobe. Lightroom is a trademark of Adobe." })),
+      start: [h("button", { class: "link", text: "Project page on GitHub", onclick: () => platform.openURL("https://github.com/pvn-ptl/lr-mask-presets") })],
+    }),
   };
-  openDialog(h("div", { class: "sheet" },
-    h("h2", null, "Settings"),
-    tabs([["sources", "Sources", "stack"], ["output", "Output", "folder"], ["about", "About", "info"]], tab, (id) => showSettings(id)),
-    body[tab](),
-    h("div", { class: "actions" }, h("button", { class: "button primary", onclick: closeDialog }, "Done"))));
+  const page = pages[tab]();
+  openDialog(sheet({
+    head: [
+      h("h2", null, "Settings"),
+      tabs([["sources", "Sources", "stack"], ["output", "Output", "folder"], ["about", "About", "info"]], tab, (id) => showSettings(id)),
+    ],
+    body: page.body,
+    start: page.start,
+    actions: h("button", { class: "button primary", onclick: closeDialog, autofocus: true }, "Done"),
+  }));
 }
 
 // ---------- settings ----------
@@ -1587,10 +1636,71 @@ function pick(obj, keys) {
   return Object.fromEntries(keys.filter((k) => k in obj).map((k) => [k, obj[k]]));
 }
 
+const prefersDark = matchMedia("(prefers-color-scheme: dark)");
+
 function applyTheme() {
   const theme = params.get("theme") || state.settings.theme || "system";
-  if (theme === "system") delete document.documentElement.dataset.theme;
-  else document.documentElement.dataset.theme = theme;
+  const root = document.documentElement;
+  if (theme === "system") delete root.dataset.theme;
+  else root.dataset.theme = theme;
+  // What's showing, whatever the setting: the toolbar switch and the canvas follow this.
+  const scheme = theme === "light" || theme === "dark" ? theme : prefersDark.matches ? "dark" : "light";
+  root.dataset.scheme = scheme;
+  const button = $("toggleTheme");
+  if (button) {
+    const next = scheme === "dark" ? "Light" : "Dark";
+    button.title = `Switch to ${next} Appearance`;
+    button.setAttribute("aria-label", `Switch to ${next.toLowerCase()} appearance`);
+  }
+}
+
+/** Change the appearance setting; the new look spreads out from `origin` (a point in the window) when given. */
+function setTheme(theme, origin) {
+  params.delete("theme"); // a ?theme= in the address only sets the starting look
+  state.settings.theme = theme;
+  const swap = () => applyTheme();
+  // Saving tells the Mac app, which changes the window's appearance; do that once the old look is captured.
+  if (!origin || !document.startViewTransition || reducedMotion()) { swap(); saveSettings(); return; }
+  const root = document.documentElement;
+  const [x, y] = origin;
+  const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  root.classList.add("theme-swap");
+  const t = document.startViewTransition(swap);
+  t.updateCallbackDone.finally(saveSettings);
+  t.ready.then(() => root.animate(
+    { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+    { duration: 720, easing: "cubic-bezier(.2, .9, .25, 1)", pseudoElement: "::view-transition-new(root)" },
+  )).catch(() => {});
+  t.finished.finally(() => root.classList.remove("theme-swap"));
+}
+
+function toggleTheme() {
+  const r = $("toggleTheme").getBoundingClientRect();
+  setTheme(document.documentElement.dataset.scheme === "dark" ? "light" : "dark", [r.left + r.width / 2, r.top + r.height / 2]);
+}
+
+/** The canvas behind the window drifts toward the pointer, and a soft light follows it. */
+function bindCanvas() {
+  const canvas = $("aurora");
+  const root = document.documentElement;
+  let frame = 0, x = 0, y = 0;
+  const paint = () => {
+    frame = 0;
+    canvas.style.setProperty("--px", ((x / innerWidth) * 2 - 1).toFixed(3));
+    canvas.style.setProperty("--py", ((y / innerHeight) * 2 - 1).toFixed(3));
+    canvas.style.setProperty("--gx", `${Math.round(x)}px`);
+    canvas.style.setProperty("--gy", `${Math.round(y)}px`);
+  };
+  document.addEventListener("pointermove", (ev) => {
+    if (ev.pointerType === "touch") return;
+    x = ev.clientX; y = ev.clientY;
+    root.classList.add("pointer-in");
+    if (!frame) frame = requestAnimationFrame(paint);
+  }, { passive: true });
+  document.addEventListener("pointerleave", () => root.classList.remove("pointer-in"));
+  document.documentElement.addEventListener("mouseleave", () => root.classList.remove("pointer-in"));
+  window.addEventListener("blur", () => root.classList.remove("pointer-in"));
+  prefersDark.addEventListener("change", applyTheme);
 }
 
 // ---------- window chrome: toolbar, drag & drop, keyboard ----------
@@ -1599,6 +1709,8 @@ function bindChrome() {
   $("addButton").addEventListener("click", openAddMenu);
   $("historyButton").addEventListener("click", openHistory);
   $("openSettings").addEventListener("click", () => showSettings());
+  $("toggleTheme").addEventListener("click", toggleTheme);
+  bindCanvas();
   $("toggleInspector").addEventListener("click", toggleInspector);
   $("toggleSidebar").addEventListener("click", () => $("app").classList.toggle("show-sidebar"));
   for (const b of document.querySelectorAll(".view-switch button")) b.addEventListener("click", () => setView(b.dataset.view));
