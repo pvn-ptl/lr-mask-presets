@@ -206,6 +206,11 @@ The sample presets in `web/samples` are original looks made for this project (`n
 Partly was called LR Mask Presets in version 1.0.0. The first time Partly runs, it moves that version's settings and
 folders over to the new name, and still recognises the presets it made back then.
 
+## License and security
+
+Partly is free and open source under the [MIT License](LICENSE). To report a security problem privately, see the
+[Security Policy](SECURITY.md).
+
 ---
 
 Not made by or affiliated with Adobe. Adobe, Lightroom and Photoshop are trademarks of Adobe.
