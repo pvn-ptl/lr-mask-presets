@@ -89,6 +89,9 @@ input { caret-color: var(--accent); }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--fill-3); border-radius: 99px; border: 3px solid transparent; background-clip: content-box; }
 ::-webkit-scrollbar-thumb:hover { background-color: var(--label-3); }
+/* The placeholder a static icon is put into takes no box of its own, so the icon centres in its control
+   (as an inline child of a block it would sit on a text line and ride ~2px high). */
+[data-icon] { display: contents; }
 .icon { display: inline-flex; flex: none; }
 .icon svg { display: block; }
 
@@ -287,7 +290,11 @@ html.native .app-mark { display: none; } /* the traffic lights live here */
   position: relative; aspect-ratio: 16 / 10; border-radius: 14px; overflow: hidden; background: var(--tile);
   box-shadow: 0 0 0 1px var(--separator) inset, 0 1px 2px rgba(0, 0, 0, .12); transition: transform .4s var(--spring), box-shadow .25s;
 }
-.tile-face canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; image-rendering: auto; border-radius: inherit; }
+.tile-face canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; image-rendering: auto; border-radius: inherit; transition: scale .7s var(--ease-out); }
+.tile:hover .tile-face canvas { scale: 1.045; }
+/* A library's first appearance: the presets on screen arrive in a short cascade (24 at most, ~0.6s in all). */
+#list .item.arrive { animation: arrive .5s var(--ease-out) backwards; animation-delay: calc(var(--i) * 22ms); }
+@keyframes arrive { from { opacity: 0; translate: 0 10px; scale: .97; } }
 .tile-face::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1), inset 0 1px 0 rgba(255, 255, 255, .18); pointer-events: none; }
 .tile:hover .tile-face { transform: translateY(-2px); box-shadow: 0 0 0 1px var(--separator) inset, 0 10px 24px rgba(0, 0, 0, .22); }
 .tile[aria-current="true"] .tile-face { box-shadow: 0 0 0 3px var(--accent), 0 8px 22px rgba(0, 0, 0, .25); }
@@ -460,11 +467,41 @@ html.native .app-mark { display: none; } /* the traffic lights live here */
 @keyframes swap-in { from { opacity: 0; transform: translateY(6px); } }
 .inspector-scroll.leaving { position: absolute; inset: 0; pointer-events: none; animation: swap-out .12s var(--ease-in) forwards; }
 @keyframes swap-out { to { opacity: 0; } }
+/* The look on the sample scene, inside the chosen mask. Layers: the untouched scene, the look (transparent outside
+   the mask), the mask tint. The picture is 16:10, cropped to 16:9 from the centre. */
 .hero-swatch { position: relative; margin: 0 0 16px; aspect-ratio: 16 / 9; }
-.hero-swatch canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; border-radius: 14px; }
-.hero-swatch .glow { filter: blur(26px) saturate(1.4); opacity: .55; transform: translateY(10px) scale(.94); }
-.hero-swatch .face { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12), 0 1px 0 rgba(255, 255, 255, .1); }
-.hero-swatch figcaption { position: absolute; left: 10px; bottom: 8px; font-size: 10.5px; font-weight: 600; color: rgba(255, 255, 255, .92); text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
+.hero-swatch .glow { position: absolute; inset: 0; width: 100%; height: 100%; display: block; border-radius: 14px; object-fit: cover; filter: blur(26px) saturate(1.4); opacity: .5; transform: translateY(10px) scale(.94); }
+.hero-frame { position: absolute; inset: 0; border-radius: 14px; overflow: hidden; cursor: grab; touch-action: none; }
+.hero-frame:active { cursor: grabbing; }
+.hero-frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; }
+.hero-frame::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), inset 0 1px 0 rgba(255, 255, 255, .16); pointer-events: none; }
+.hero-frame .look { transition: opacity .18s var(--ease-out); }
+.hero-swatch.before .look { opacity: 0; transition-duration: .12s; }
+.hero-frame .tint { opacity: 0; transition: opacity .25s var(--ease-out); }
+.hero-swatch.overlay .tint { opacity: 1; }
+.hero-swatch.flash .tint { animation: mask-flash .95s var(--ease-out); }
+@keyframes mask-flash { 0% { opacity: 0; } 22% { opacity: .9; } 100% { opacity: 0; } }
+.hero-swatch figcaption {
+  position: absolute; left: 8px; bottom: 8px; max-width: calc(100% - 56px); display: flex; align-items: center; gap: 2px;
+  height: 24px; padding: 0 3px 0 9px; border-radius: 99px; background: rgba(12, 14, 20, .42);
+  -webkit-backdrop-filter: blur(12px) saturate(1.6); backdrop-filter: blur(12px) saturate(1.6);
+  font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, .95); pointer-events: none;
+}
+.hero-swatch figcaption:not(:has(.hero-next)) { padding-right: 9px; }
+.hero-swatch .where { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hero-next {
+  pointer-events: auto; display: inline-flex; align-items: center; gap: 3px; height: 18px; padding: 0 5px 0 7px; margin-left: 4px; border: 0; border-radius: 99px;
+  background: rgba(255, 255, 255, .16); color: inherit; font: inherit; font-size: 10.5px; font-variant-numeric: tabular-nums; transition: background .15s;
+}
+.hero-next:hover { background: rgba(255, 255, 255, .28); }
+.hero-next:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--accent-ring); }
+.hero-mask.icon-button {
+  position: absolute; right: 8px; bottom: 8px; width: 28px; height: 28px; color: rgba(255, 255, 255, .92);
+  background: rgba(12, 14, 20, .42); -webkit-backdrop-filter: blur(12px) saturate(1.6); backdrop-filter: blur(12px) saturate(1.6);
+}
+.hero-mask.icon-button:hover { background: rgba(12, 14, 20, .6); color: #fff; }
+.hero-mask[aria-pressed="true"] { background: var(--accent-fill, var(--accent)); color: #fff; }
+.hero-mask[aria-pressed="true"]:hover { background: var(--accent-fill-hover, var(--accent)); }
 .ins-head h2.title { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; overflow-wrap: anywhere; -webkit-user-select: text; user-select: text; text-wrap: balance; }
 .ins-sub { margin: 3px 0 0; color: var(--label-2); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .ins-sub .dot { opacity: .6; }
@@ -562,7 +599,7 @@ table.rows tr.lost td.setting { color: var(--label-2); }
 
 .more summary { list-style: none; display: inline-flex; align-items: center; gap: 4px; color: var(--label-2); font-weight: 600; font-size: 12px; padding: 2px; }
 .more summary::-webkit-details-marker { display: none; }
-.more summary .icon { transition: transform .35s var(--spring); }
+.more summary .icon { translate: 0 -.5px; transition: transform .35s var(--spring); } /* level with the cap height, not the line box */
 .more[open] summary .icon { transform: rotate(90deg); }
 .more summary:hover { color: var(--label); }
 .more-body { display: grid; gap: 10px; padding: 10px 2px 2px; }
@@ -693,6 +730,20 @@ dialog::backdrop { background: var(--scrim); -webkit-backdrop-filter: blur(3px);
 .sheet .ok svg path { stroke-dasharray: 30; stroke-dashoffset: 30; animation: tick .5s var(--ease-out) forwards .35s; }
 @keyframes ok-pop { from { transform: scale(.3); opacity: 0; } }
 @keyframes tick { to { stroke-dashoffset: 0; } }
+/* The done sheet's fan: some of the new presets on the sample scene, dealt from one stack. */
+.deal { position: relative; height: 98px; margin: -4px 0 -2px; --spread: 92px; }
+.deal .card {
+  position: absolute; left: 50%; top: 8px; width: 120px; height: 75px; margin-left: -60px; border-radius: 10px; overflow: hidden;
+  translate: calc(var(--o) * var(--spread)) calc(var(--o2) * 3px); rotate: calc(var(--o) * 5deg);
+  z-index: calc(10 - var(--o2)); box-shadow: 0 1px 2px rgba(0, 0, 0, .18), 0 8px 20px rgba(0, 0, 0, .22); transition: translate .45s var(--spring), rotate .45s var(--spring);
+}
+.deal .card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16); }
+.deal .card canvas { width: 100%; height: 100%; display: block; }
+.deal .card:hover { translate: calc(var(--o) * var(--spread)) calc(var(--o2) * 3px - 7px); rotate: calc(var(--o) * 3deg); z-index: 11; }
+.deal.dealing .card { animation: deal .7s var(--spring-soft) backwards; animation-delay: calc(.16s + var(--i) * 55ms); }
+@keyframes deal { from { opacity: 0; translate: 0 22px; rotate: 0deg; scale: .86; } }
+@container sheet (max-width: 540px) { .deal { --spread: 64px; } }
+@container sheet (max-width: 420px) { .deal { --spread: 44px; } }
 .sheet .path { display: flex; align-items: flex-start; gap: 6px; font: 11.5px/1.45 var(--mono); background: var(--fill); border: 1px solid var(--separator); border-radius: 10px; padding: 8px 6px 8px 11px; }
 .sheet .path > span { flex: 1; min-width: 0; padding-top: 1px; overflow-wrap: anywhere; }
 .sheet .path .icon-button { flex: none; width: 24px; height: 24px; margin: -2px 0; }
@@ -759,6 +810,10 @@ html.theme-swap::view-transition-new(root) { z-index: 1; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .12s !important; transition-timing-function: ease !important; }
   .tile:hover .tile-face { transform: none; }
+  .tile:hover .tile-face canvas { scale: none; }
+  .deal.dealing .card { animation: fade-in .2s ease-out backwards !important; }
+  .deal .card:hover { translate: calc(var(--o) * var(--spread)) calc(var(--o2) * 3px); rotate: calc(var(--o) * 5deg); }
+  .hero-swatch.flash .tint { animation: none; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
   /* Fades stay; nothing travels. */
   .popover { animation: fade-in .16s ease-out both !important; }

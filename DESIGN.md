@@ -246,7 +246,7 @@ components:
 
 LR Mask Presets is one Mac window that reads like Photos or Finder: a floating sidebar of sources and groups, a library browsed as a grid of swatch tiles or a sortable list, an inspector on the right, and a floating glass bar at the bottom that holds the one primary action, Create. It is built from macOS's own materials rather than a web dashboard's boxes: frosted panels over a living canvas (a dusk sky of soft colour fields that leans toward the pointer), Liquid Glass capsules (blur, saturation, a specular top edge, a soft drop shadow) for everything that floats over content, system colours for meaning, SF Pro for text and SF Pro Rounded for the numbers that matter.
 
-Density is a desktop app's density, not a web page's: 13px body text, 30px controls, 8px insets, a 52px title band shared with the traffic lights. Colour is almost entirely neutral. The system blue marks selection and the primary action; green, orange, purple and gray say how a setting carries over and nothing else. The only rich colour on screen is the presets themselves, each drawn as a computed swatch: a synthetic landscape pushed through that preset's own settings.
+Density is a desktop app's density, not a web page's: 13px body text, 30px controls, 8px insets, a 52px title band shared with the traffic lights. Colour is almost entirely neutral. The system blue marks selection and the primary action; green, orange, purple and gray say how a setting carries over and nothing else. The only rich colour on screen is the presets themselves, each drawn as a computed swatch: one made-up alpine lake at golden hour (sky and clouds, snowy peaks, a treeline, a cabin, a jetty, a meadow, a rock and a hiker) pushed through that preset's own settings. Every part of that scene is also a mask region, so the inspector can show the look only where the chosen mask is, which is what an export really does.
 
 Motion is part of the material. Things arrive on springs (about 5% overshoot), leave faster on a plain ease-in, and travel only where travel explains something: the List and Grid morph, the sidebar highlight sliding to the current row, popovers growing from their button, the carry-over meter reflowing between presets, the score counting to its value.
 
@@ -351,7 +351,7 @@ Depth is material, not shadow stacks. There are three levels: the canvas (the du
 
 ## Shapes
 
-Continuous, soft rounding scaled to the object: pills (99px) for every button, capsule, chip, bar and toast; 18px for floating panels and popovers; 20px for sheets; 14px for tiles and menus; 12px for inspector cards; 9-11px for rows and mask targets; 5-8px for tags, fields and row swatches. Selection checks and the step counters are circles. Borders are 1px hairlines in translucent separator colours; the only dashed edge is the drop target. Icons are 24px-grid line drawings, 1.7 stroke, round caps and joins, in `currentColor`.
+Continuous, soft rounding scaled to the object: pills (99px) for every button, capsule, chip, bar and toast; 18px for floating panels and popovers; 20px for sheets; 14px for tiles and menus; 12px for inspector cards; 9-11px for rows and mask targets; 5-8px for tags, fields and row swatches. Selection checks and the step counters are circles. Borders are 1px hairlines in translucent separator colours; the only dashed edge is the drop target. Icons are 24px-grid line drawings, 1.7 stroke, round caps and joins, in `currentColor`, and optically centred: `icons.js` moves each drawing so its ink (stroke included) is centred in the grid, and the UI tests hold every icon to within 0.4 units of centre and every icon-only control to within 0.6px.
 
 ## Components
 
@@ -367,7 +367,7 @@ Quiet, pill-shaped, pressable.
 Glass pills grouping 34px circular controls (view switch; Add, Recent Exports, Appearance and Settings; search; inspector toggle). The view switch has a sliding thumb that springs between Grid and List. The Appearance switch shows a moon in Dark and a sun in Light; the other icon turns away on a spring, the sun turns a quarter on hover, and a click spreads the other appearance out in a circle from the button (a view transition, 720ms; instant under Reduce Motion). Settings › Output keeps Auto / Light / Dark. Search widens from 200 to 260px on focus with a blue ring. Pressed toggles turn their icon blue.
 
 ### Preset tile (signature)
-A 16:10 computed swatch with a 14px radius, inner hairline and specular edge; name (560) and "NN% carries over" caption under it, then a 4px segmented mini meter in status colours. Hover lifts 2px; current gets a 3px solid blue ring, selected a 3px translucent ring. A frosted circular check appears top-left on hover or while selecting and fills blue when picked.
+A 16:10 computed swatch (320 x 200, the whole look) with a 14px radius, inner hairline and specular edge; on hover the picture inside eases up to 104.5% (700ms) as the tile lifts; name (560) and "NN% carries over" caption under it, then a 4px segmented mini meter in status colours. Hover lifts 2px; current gets a 3px solid blue ring, selected a 3px translucent ring. A frosted circular check appears top-left on hover or while selecting and fills blue when picked.
 
 ### List row
 40px rows on a zebra `fill`, 9px radius, with a 44 x 26 swatch, name, group, mini meter + percentage, and counts. Selected rows tint `accent-soft`; the current row fills `accent-fill` with white text. Circular row checks pop their tick on a spring.
@@ -384,7 +384,7 @@ A 600px glass popover grown from the Masks button: three families of 38px mask t
 A 380px glass popover from the toolbar's clock button (which pops in after the first export). Rows: a 32px `accent-soft` tile with the mask icon, the presets ("Moody Teal and 1 other") over "into …" and the time, then reveal and Export Again icon buttons. An export whose file is gone greys its tile and disables reveal.
 
 ### Inspector
-A frosted `panel`: a 16:9 hero swatch with a blurred glow of itself beneath, the name, the rounded display percentage beside a drawn mini curve, an 8px segmented meter with legend, a destination card, and a table of settings each with a status pill. Content swaps by fading the old view out (120ms) and the new one in with a 6px rise (240ms).
+A frosted `panel`: a 16:9 hero picture (640 x 400, cropped from the centre) of the sample scene with the look inside the chosen mask only and the rest untouched, over a blurred glow of the whole look. A glass caption names the mask ("Inside Sky") and, with several masks chosen, steps through them ("2/3 ›"); a glass button turns on a red mask overlay (red reads on sky, water and greenery alike); pressing and holding the picture shows the scene without the look. Choosing another mask flashes the new mask red for a moment (950ms) while the look crossfades into it (420ms after 160ms). Below it come the name, the rounded display percentage beside a drawn mini curve, an 8px segmented meter with legend, a destination card, and a table of settings each with a status pill. Content swaps by fading the old view out (120ms) and the new one in with a 6px rise (240ms).
 
 ### Status pill
 11px/650 ink text with a 6px dot, on its status hue at 14-15%, 6px radius. Gray uses `fill-2`.
@@ -393,7 +393,7 @@ A frosted `panel`: a 16:9 hero swatch with a blurred glow of itself beneath, the
 Segmented and tab controls: a `fill-2` track, 10px radius, the selected segment raised on `content` with a small shadow. Switches are iOS-style 38 x 22 with a white knob that springs across. Text fields: 30px, 8px radius, `content` well, blue 3px focus ring.
 
 ### Sheets, toasts, menus
-Sheets drop in from above on a soft spring (glass-strong, 20px radius) and are sized as in Layout; the done sheet draws its green tick, and its path box has a copy button at its end. Settings rows put the source's name and its count on one line and its folder, wrapped, underneath; a folder that isn't on this Mac says so in `approx-ink`. Toasts are glass HUD pills at the top centre. Menus highlight the hovered item with `accent-fill` and white text, macOS style.
+Sheets drop in from above on a soft spring (glass-strong, 20px radius) and are sized as in Layout; the done sheet deals a fan of up to five of the new presets (each the look inside its mask, spread across the batch) from one stack, 55ms apart on the soft spring, the middle card on top and each lifting on hover, then draws its green tick, and its path box has a copy button at its end. Settings rows put the source's name and its count on one line and its folder, wrapped, underneath; a folder that isn't on this Mac says so in `approx-ink`. Toasts are glass HUD pills at the top centre. Menus highlight the hovered item with `accent-fill` and white text, macOS style.
 
 ## Do's and Don'ts
 
@@ -407,6 +407,7 @@ Sheets drop in from above on a soft spring (glass-strong, 20px radius) and are s
 - **Do** keep the page working the same in WKWebView (`html.native`, drag regions, forwarded settings) and in a plain browser.
 - **Do** draw icons as 24px line drawings at 1.7 stroke in `currentColor`; draw apps as generic objects (a cloud, a display, a camera).
 - **Do** use tabular figures for every changing number.
+- **Do** keep motion where it explains something: the fan shows what was made, the mask flash shows where a look goes, and the first library load arrives in one short cascade (24 tiles at most, 22ms apart). Nothing else on screen moves on its own.
 
 ### Don't:
 - **Don't** use Adobe's or Lightroom's logos, lettermarks, colours or branding anywhere; this app is not made by or affiliated with Adobe.
