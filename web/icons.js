@@ -61,8 +61,27 @@ const P = {
   camera: '<path d="M4 9a2 2 0 0 1 2-2h2.2l1.5-2.2h4.6L15.8 7H18a2 2 0 0 1 2 2v8.2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.8" r="3.6"/>',
 };
 
+// Optical centring, measured from each drawing's ink (stroke included): [x, y] moves the ink so its box is centred in
+// the 24-unit grid; a third value scales an icon that fills the whole box down to the family's ~20-unit size (its
+// stroke is thickened to match). test/ui.test.mjs checks every icon stays centred.
+const OPTICAL = {
+  subject: [0, -0.45], sky: [0.58, -0.15], "not-sky": [0.58, 0], "not-people": [0, -0.25], people: [0, -0.25], skin: [0.33, 0.35],
+  hair: [0, -0.5], eyebrows: [0, 0.45], lips: [0, -0.5], teeth: [-0.5, 0], "facial-hair": [0, -2.5], mountains: [0, -2.5],
+  water: [0, -0.75], architecture: [0, -0.25], "natural-ground": [0, -3.1], search: [-0.5, -0.5], folder: [0, -0.5], file: [0.5, 0],
+  check: [0, -0.25], sparkle: [-1.4, -0.05], "cloud-photos": [0.34, -0.65], refresh: [0, 0.91], stack: [0, 1.5],
+  "desktop-photos": [0, -0.25], down: [0, -0.5], up: [0, 0.5], history: [0.25, 0], gear: [0, 0, 0.85],
+};
+
+function placed(name, body) {
+  const fix = OPTICAL[name];
+  if (!fix) return body;
+  const [x, y, s = 1] = fix;
+  const t = (v) => +(12 * (1 - s) + s * v).toFixed(3);
+  return `<g transform="translate(${t(x)} ${t(y)})${s === 1 ? "" : ` scale(${s})`}"${s === 1 ? "" : ` stroke-width="${+(1.7 / s).toFixed(3)}"`}>${body}</g>`;
+}
+
 export function icon(name, size = 18) {
-  const body = P[name] || P.info;
+  const body = placed(name in P ? name : "info", P[name] || P.info);
   const span = document.createElement("span");
   span.className = "icon";
   span.setAttribute("aria-hidden", "true");
@@ -71,3 +90,4 @@ export function icon(name, size = 18) {
 }
 
 export const hasIcon = (name) => name in P;
+export const ICON_NAMES = Object.keys(P);

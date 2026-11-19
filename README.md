@@ -7,6 +7,8 @@ Put any Lightroom preset on <b>just the background</b>, or just the subject, the
 A small Mac app that rebuilds a preset's look inside a Lightroom AI mask and saves it as a new preset.
 </p>
 
+<p align="center"><a href="https://github.com/pvn-ptl/lr-mask-presets/releases/latest/download/LR-Mask-Presets.dmg"><b>⬇ Download for Mac</b></a> (.dmg) · macOS 13 or later · Apple silicon and Intel · <a href="#install">How to install</a></p>
+
 <p align="center"><img src="docs/demo.gif" width="880" alt="Picking a preset, choosing Sky and Skin in the mask picker, selecting two more presets, switching to the list view and creating the new presets"></p>
 
 ## Why
@@ -34,20 +36,26 @@ other preset.
 
 ## Install
 
-1. Download **LR-Mask-Presets-…-macOS.zip** from [Releases](../../releases) and unzip it.
-2. Drag **LR Mask Presets** into your Applications folder.
-3. Open it. The first time, macOS will say it can't check the app for malicious software, because the app isn't
-   notarized by Apple. Click **Done**, then go to **System Settings › Privacy & Security**, scroll down and click
-   **Open Anyway**. (On macOS 14 and earlier you can instead right-click the app and choose **Open**.)
+1. Download **[LR-Mask-Presets.dmg](https://github.com/pvn-ptl/lr-mask-presets/releases/latest/download/LR-Mask-Presets.dmg)** (always the latest version) and open it.
+2. In the window that opens, drag **LR Mask Presets** onto the **Applications** folder beside it. Then eject the
+   disk image.
+3. Open the app from Applications. The first time, macOS will say it can't check the app for malicious software,
+   because the app isn't notarized by Apple. Click **Done**, then go to **System Settings › Privacy & Security**,
+   scroll down and click **Open Anyway**. (On macOS 14 and earlier you can instead right-click the app and choose
+   **Open**.) You only do this once.
 
-Needs macOS 13 or later, on Apple silicon or Intel. If you'd rather build it yourself, see [Development](#development).
+Needs macOS 13 or later, on Apple silicon or Intel. Every [release](../../releases) lists the SHA-256 of its
+files, so you can check your download with `shasum -a 256 ~/Downloads/LR-Mask-Presets.dmg`. There's also a
+`.zip` of the app on each release, and you can build it yourself: see [Development](#development).
 
 ## Use it
 
 1. **Pick presets.** Your presets appear as a library, grouped like in Lightroom (see [where it looks](#where-it-looks)).
-   Each one gets a small colour swatch drawn from its own settings, so you can tell looks apart at a glance. Switch
+   Each one is shown as a sample scene (a mountain lake with a hiker) pushed through its own settings, so you can
+   tell looks apart at a glance. Switch
    between the grid and a sortable list with the buttons in the toolbar (or ⌘1 and ⌘2). Click a preset to see what
-   carries over. ⌘-click, ⇧-click or the round checkboxes select several, and **Select All** takes a whole group.
+   carries over, and the scene with the look only inside the mask you chose, the way the new preset will work.
+   Press and hold the picture to see it without the look; the mask button tints what the mask covers. ⌘-click, ⇧-click or the round checkboxes select several, and **Select All** takes a whole group.
    You can also drag presets, folders or `.zip` packs onto the window.
 2. **Choose where the look goes.** Click **Masks…** in the floating bar and pick one or more. Each preset × each
    mask becomes one new preset. Below the masks you can:
@@ -184,8 +192,10 @@ scripts/       build, sample presets, icon, docs screenshots, real-library smoke
 | Task | Command |
 | --- | --- |
 | Run the tests | `npm test` (Node 20+; the browser tests run when Chrome is installed) |
-| Build the Mac app | `scripts/build-mac-app.sh` → `dist/LR Mask Presets.app` and a `.zip` (needs Xcode Command Line Tools) |
+| Build the Mac app | `scripts/build-mac-app.sh` → `dist/LR Mask Presets.app`, `dist/LR-Mask-Presets.dmg` and a `.zip` (needs Xcode Command Line Tools) |
 | Check the built app | `"dist/LR Mask Presets.app/Contents/MacOS/LR Mask Presets" --selftest` |
+| Check the disk image | `scripts/verify-dmg.sh` (mounts it read-only, checks the app, runs the self-test from the image) |
+| Publish a release | `gh release create vX.Y.Z dist/LR-Mask-Presets.dmg dist/LR-Mask-Presets-X.Y.Z-macOS.zip`; keep the `.dmg` name so the download link above always gets the latest |
 | Check against your own presets | `node scripts/smoke-real.mjs` (read-only: converts every preset to every mask in memory) |
 | Regenerate screenshots & GIF | `PYTHON=/path/to/python-with-Pillow node scripts/capture-docs.mjs` |
 

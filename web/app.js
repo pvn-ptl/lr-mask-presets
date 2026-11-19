@@ -1,7 +1,7 @@
 import * as core from "./core/index.js";
 import { createPlatform, droppedFiles } from "./platform.js";
 import { icon } from "./icons.js";
-import { clearSwatches, paintSwatch } from "./swatch.js";
+import { clearSwatches, paintSwatch, paintScene, paintLook, paintMask, paintResult, TILE } from "./swatch.js";
 
 const platform = createPlatform();
 const native = platform.kind === "native";
@@ -440,7 +440,16 @@ function renderBrowser({ keepScroll = true } = {}) {
   if (keepScroll) list.scrollTop = top;
   syncActiveDescendant();
   paintVisible(true);
+  // The first time a library appears, the presets on screen arrive in a short cascade (later renders just appear).
+  const arriving = !shownLibrary && visible.length > 0;
+  shownLibrary = state.entries.length > 0;
+  if (arriving && !reducedMotion()) {
+    const items = [...list.querySelectorAll(".item")].slice(0, 24);
+    items.forEach((el, i) => { el.classList.add("arrive"); el.style.setProperty("--i", String(i)); });
+    setTimeout(() => items.forEach((el) => { el.classList.remove("arrive"); el.style.removeProperty("--i"); }), 1400);
+  }
 }
+let shownLibrary = false;
 
 function gridView(visible) {
   const groups = groupsOf(visible);
@@ -461,7 +470,7 @@ function tile(entry) {
     "aria-selected": String(state.checked.has(entry.id)), "aria-current": String(state.current === entry.id),
   },
   h("div", { class: "tile-face" },
-    h("canvas", { class: "swatch", width: 120, height: 75, "aria-hidden": "true" }),
+    h("canvas", { class: "swatch", width: TILE.w, height: TILE.h, "aria-hidden": "true" }),
     h("span", { class: "check", role: "checkbox", "aria-checked": String(state.checked.has(entry.id)), "aria-label": `Select ${name}` }, icon("check", 13))),
   h("div", { class: "tile-meta" },
     h("span", { class: "name", text: name, title: name }),
@@ -497,7 +506,7 @@ function row(entry) {
     "aria-selected": String(state.checked.has(entry.id)), "aria-current": String(state.current === entry.id),
   },
   h("span", { class: "check-cell" }, h("span", { class: "rowcheck check-hit", role: "checkbox", "aria-checked": String(state.checked.has(entry.id)), "aria-label": `Select ${name}` }, icon("check", 11))),
-  h("canvas", { class: "swatch", width: 120, height: 75, "aria-hidden": "true" }),
+  h("canvas", { class: "swatch", width: TILE.w, height: TILE.h, "aria-hidden": "true" }),
   h("span", { class: "name", title: name }, h("span", { text: name }), entry.preset.format === "lrtemplate" ? h("span", { class: "tag", text: "Classic" }) : null),
   h("span", { class: "group muted hide-narrow", text: group || "Presets", title: group || "" }),
   h("span", { class: "fit" }, miniMeter(conv), h("span", { class: "pct", text: conv.empty ? "—" : `${pctOf(conv)}%` })),
@@ -615,11 +624,10 @@ function renderDetail() {
   const changed = shownDetail !== entry.id;
   const previousScroll = pane.querySelector(".inspector-scroll")?.scrollTop || 0;
 
-  const hero = h("figure", { class: "hero-swatch", title: "The look's tones and colours, from shadows (left) to highlights (right). A sketch from its settings, not a photo." },
-    h("canvas", { class: "glow", width: 120, height: 75, "aria-hidden": "true" }),
-    h("canvas", { class: "face", width: 120, height: 75, role: "img", "aria-label": `Colour sketch of ${preset.name}` }));
-  paintSwatch(hero.children[0], preset, entry.id);
-  paintSwatch(hero.children[1], preset, entry.id);
+  // Same preset: keep its picture and move it into the new details, so a new mask can animate into place.
+  const kept = !changed && pane.querySelector(".inspector-scroll:not(.leaving) .hero-swatch");
+  const hero = kept && kept.dataset.id === entry.id ? kept : buildHero(entry);
+  updateHero(hero, entry, hero === kept);
 
   const c = conv.counts;
   const mapped = c.exact + c.approx;
@@ -691,6 +699,73 @@ function renderDetail() {
   shownDetail = entry.id;
   shownPct = conv.empty ? 0 : pct;
   shownCounts = { ...c };
+}
+
+// The inspector's picture: the sample scene with the look only where the chosen mask is, which is what an export
+// does. Press and hold to see the scene without it; the mask button tints what the mask covers. Choosing another mask
+// flashes the new mask for a moment, then the look settles into it.
+let heroTarget = null; // which of the chosen masks the picture shows
+let heroOverlay = false;
+
+function buildHero(entry) {
+  const glow = h("canvas", { class: "glow", "aria-hidden": "true" });
+  const scene = h("canvas", { class: "scene", "aria-hidden": "true" });
+  const tint = h("canvas", { class: "tint", "aria-hidden": "true" });
+  const frame = h("div", { class: "hero-frame", role: "img", title: "A sample scene, not your photo. Press and hold to see it without the look." }, scene, tint);
+  const toggle = h("button", { class: "hero-mask icon-button", type: "button" }, icon("masks", 15));
+  const setOverlay = () => {
+    figure.classList.toggle("overlay", heroOverlay);
+    toggle.setAttribute("aria-pressed", String(heroOverlay));
+    toggle.title = toggle.ariaLabel = heroOverlay ? "Hide Mask Overlay" : "Show Mask Overlay";
+  };
+  toggle.addEventListener("click", () => { heroOverlay = !heroOverlay; figure.classList.remove("flash"); setOverlay(); });
+  const figure = h("figure", { class: "hero-swatch", "data-id": entry.id }, glow, frame, h("figcaption"), toggle);
+  setOverlay();
+  paintSwatch(glow, entry.preset, entry.id);
+  paintScene(scene);
+  const before = (on) => figure.classList.toggle("before", on);
+  frame.addEventListener("pointerdown", (ev) => { if (ev.button === 0) { before(true); frame.setPointerCapture(ev.pointerId); } });
+  for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) frame.addEventListener(type, () => before(false));
+  return figure;
+}
+
+function updateHero(figure, entry, animate) {
+  const chosen = [...state.targets];
+  if (!chosen.includes(heroTarget)) heroTarget = chosen[0] || null;
+  const target = heroTarget;
+  const label = target ? core.target(target).label : null;
+  const frame = figure.querySelector(".hero-frame");
+  frame.ariaLabel = label ? `${entry.preset.name} on a sample scene, inside ${label}` : `${entry.preset.name} on a sample scene`;
+
+  const at = chosen.indexOf(target);
+  fill(figure.querySelector("figcaption"),
+    h("span", { class: "where", text: label ? `Inside ${label}` : "Whole Photo", title: label || null }),
+    chosen.length > 1 ? h("button", {
+      class: "hero-next", type: "button", title: "Show the Next Mask", "aria-label": `Show the next mask (${at + 1} of ${chosen.length})`,
+      onclick: () => { heroTarget = chosen[(at + 1) % chosen.length]; updateHero(figure, entry, true); },
+    }, h("span", { text: `${at + 1}/${chosen.length}` }), icon("chevron", 10)) : null);
+
+  if (figure.dataset.target === (target || "") && frame.querySelector(".look")) return;
+  figure.dataset.target = target || "";
+  const look = h("canvas", { class: "look", "aria-hidden": "true" });
+  paintLook(look, entry.preset, entry.id, target);
+  paintMask(frame.querySelector(".tint"), target);
+  const old = [...frame.querySelectorAll(".look")];
+  frame.insertBefore(look, frame.querySelector(".tint"));
+  if (!animate || !old.length) return old.forEach((c) => c.remove());
+  const calm = reducedMotion();
+  // The mask shows where the look is going (unless its overlay is already on), then the look moves into it.
+  if (!calm && !heroOverlay && target) {
+    figure.classList.remove("flash");
+    void figure.offsetWidth;
+    figure.classList.add("flash");
+  }
+  const timing = { duration: calm ? 140 : 420, delay: calm ? 0 : 160, easing: "cubic-bezier(.22, 1, .36, 1)", fill: "backwards" };
+  look.animate({ opacity: [0, 1] }, timing);
+  for (const c of old) {
+    c.animate({ opacity: [1, 0] }, { ...timing, fill: "forwards" }).finished.then(() => c.remove(), () => c.remove());
+    setTimeout(() => c.remove(), timing.delay + timing.duration + 200); // animations pause while the window is hidden
+  }
 }
 
 function countUp(el, from, to, ms = 520) {
@@ -1405,7 +1480,7 @@ async function runExport({ entries, targets, options, groupTemplate, amount = 1,
     if (result?.error) return toast(result.error, true);
     closePopover(true);
     recordExport({ result, files, entries, targets, options, groupTemplate, amount });
-    showDone(result, files, skipped);
+    showDone(result, files, skipped, undefined, spread(jobs, 5));
     return { ...result, count: files.length, skipped: skipped.length };
   } catch (err) {
     platform.log(err?.stack || err);
@@ -1466,7 +1541,24 @@ function sheet({ head, body, start = [], actions, wide = false }) {
     h("div", { class: "sheet-foot" }, h("div", { class: "foot-start" }, start), actions));
 }
 
-function showDone(result, files, skipped, tab = state.apps.cloud === false && state.apps.classic ? "classic" : "cloud") {
+/** Up to `n` items, spread evenly across the list (first and last included). */
+function spread(items, n) {
+  if (items.length <= n) return items;
+  return Array.from({ length: n }, (_, i) => items[Math.round((i * (items.length - 1)) / (n - 1))]);
+}
+
+/** A fan of cards: what some of the new presets do to the sample scene (the look inside each one's mask). */
+function dealCards(jobs, animate) {
+  const mid = (jobs.length - 1) / 2;
+  return h("div", { class: `deal${animate ? " dealing" : ""}`, "aria-hidden": "true" }, jobs.map((job, i) => {
+    const o = i - mid;
+    const canvas = h("canvas");
+    paintResult(canvas, job.entry.preset, job.entry.id, job.targetId);
+    return h("span", { class: "card", title: `${job.entry.preset.name}, inside ${core.target(job.targetId).label}`, style: `--o: ${o}; --o2: ${o * o}; --i: ${i}` }, canvas);
+  }));
+}
+
+function showDone(result, files, skipped, tab = state.apps.cloud === false && state.apps.classic ? "classic" : "cloud", made = []) {
   const zip = result.zip || "";
   const zipName = zip.split("/").pop();
   const steps = {
@@ -1495,9 +1587,11 @@ function showDone(result, files, skipped, tab = state.apps.cloud === false && st
     ],
   };
   const where = zip || result.folder || "";
+  let dealt = false;
   const draw = (current) => openDialog(sheet({
     wide: true,
     head: [
+      made.length ? dealCards(made, !dealt && (dealt = true)) : null,
       h("h2", null, h("span", { class: "ok" }, icon("check", 18)), `${plural(files.length, "preset")} ready`),
       native && result.folder ? h("div", { class: "path" },
         h("span", { class: "selectable", text: where }),
