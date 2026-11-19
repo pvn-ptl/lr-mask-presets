@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LR Mask Presets</title>
+<style>
+:root {
+  --bg: #18181a; --panel: #212124; --panel-2: #2a2a2e; --hover: #303035; --line: #36363b;
+  --text: #ececef; --muted: #9a9aa3; --faint: #6c6c75;
+  --accent: #5aa2ff; --accent-ink: #08172b; --focus: #5aa2ff55;
+  --exact: #43b883; --approx: #e3a13b; --lost: #7a7a84; --danger: #f07070;
+  --radius: 10px; color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f3f3f5; --panel: #ffffff; --panel-2: #f2f2f5; --hover: #ebebef; --line: #dedee4;
+    --text: #1a1a1f; --muted: #62626c; --faint: #9a9aa4;
+    --accent: #1f6fe0; --accent-ink: #ffffff; --focus: #1f6fe040;
+    --exact: #1f9a63; --approx: #b9780f; --lost: #9a9aa4; color-scheme: light;
+  }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  display: grid; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); overflow: hidden;
+}
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* top bar */
+.top { display: flex; align-items: center; gap: 24px; padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--panel); }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+.mark { width: 30px; height: 30px; border-radius: 8px; flex: none;
+  background: radial-gradient(circle at 50% 42%, var(--text) 0 26%, transparent 27%), linear-gradient(135deg, var(--accent), #7d5cff); }
+.brand h1 { font-size: 15px; margin: 0; font-weight: 650; }
+.brand p { margin: 0; color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.seg { display: inline-flex; flex: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px; padding: 3px; }
+.seg button { border: 0; background: none; padding: 6px 14px; border-radius: 6px; color: var(--muted); font-weight: 550; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+/* layout */
+main { display: grid; grid-template-columns: minmax(300px, 380px) 1fr; min-height: 0; }
+.list { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--line); background: var(--panel); }
+.list-head { padding: 14px 14px 10px; display: grid; gap: 10px; border-bottom: 1px solid var(--line); }
+.search { width: 100%; padding: 8px 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: none; border-radius: 999px; padding: 3px 10px; font-size: 12.5px; color: var(--muted); }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--text); background: var(--focus); }
+.chip small { color: var(--faint); margin-left: 4px; }
+.row-tools { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.link { border: 0; background: none; color: var(--accent); padding: 0; font-size: 12.5px; }
+.check { display: inline-flex; align-items: center; gap: 6px; }
+.groups { overflow: auto; flex: 1; padding: 6px 0 12px; }
+.group-head { display: flex; align-items: center; gap: 8px; padding: 7px 14px 7px 8px; position: sticky; top: 0; background: var(--panel); z-index: 1; }
+.group-head:hover { background: var(--hover); }
+.chev { border: 0; background: none; width: 22px; height: 22px; color: var(--muted); border-radius: 5px; flex: none; transition: transform .12s; }
+.chev[aria-expanded="true"] { transform: rotate(90deg); }
+.group-name { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.group-name small { color: var(--faint); font-weight: 450; margin-left: 6px; }
+.count { color: var(--faint); font-size: 12px; }
+.item { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 38px; cursor: pointer; }
+.item:hover { background: var(--hover); }
+.item[aria-current="true"] { background: var(--focus); }
+.item .name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item .tag { font-size: 11px; color: var(--faint); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+.pill { font-size: 11.5px; font-variant-numeric: tabular-nums; padding: 1px 7px; border-radius: 999px; background: var(--panel-2); color: var(--muted); min-width: 42px; text-align: center; }
+.pill.hi { color: var(--exact); } .pill.mid { color: var(--approx); }
+input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; margin: 0; flex: none; }
+.drop { margin: 10px 14px 14px; border: 1.5px dashed var(--line); border-radius: var(--radius); padding: 14px; text-align: center; color: var(--muted); font-size: 13px; cursor: pointer; }
+.drop.over, body.dragging .drop { border-color: var(--accent); color: var(--text); background: var(--focus); }
+.drop u { color: var(--accent); text-decoration: none; }
+.empty-list { padding: 30px 20px; color: var(--muted); text-align: center; }
+
+/* detail */
+.detail { overflow: auto; padding: 26px 32px 40px; min-width: 0; }
+.welcome { max-width: 620px; margin: 6vh auto 0; }
+.welcome h2 { font-size: 22px; margin: 0 0 8px; }
+.welcome p { color: var(--muted); margin: 0 0 22px; }
+.steps { display: grid; gap: 10px; counter-reset: step; padding: 0; margin: 0; list-style: none; }
+.steps li { display: flex; gap: 14px; align-items: baseline; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+.steps li::before { counter-increment: step; content: counter(step); flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--panel-2); display: grid; place-items: center; font-weight: 650; font-size: 12.5px; }
+.steps b { display: block; margin-bottom: 2px; }
+.steps span { color: var(--muted); }
+.eyebrow { color: var(--muted); font-size: 12.5px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.badge { font-size: 11.5px; border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
+.detail h2 { font-size: 22px; margin: 4px 0 14px; word-break: break-word; }
+.summary { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 16px; }
+.summary-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.summary-top strong { font-size: 15px; }
+.legend { display: flex; gap: 14px; color: var(--muted); font-size: 12.5px; }
+.legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+.meter { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: var(--panel-2); margin-top: 12px; }
+.meter > div { height: 100%; }
+.out-group { margin-top: 12px; color: var(--muted); font-size: 12.5px; }
+.out-group b { color: var(--text); font-weight: 600; }
+.options { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 16px; font-size: 13px; color: var(--muted); }
+.options label { display: inline-flex; gap: 7px; align-items: center; cursor: pointer; }
+.options .hint { width: 100%; font-size: 12px; color: var(--faint); }
+.cols { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+.table-wrap { flex: 1 1 480px; min-width: 0; overflow-x: auto; }
+.cols .card { flex: 0 1 240px; }
+table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; font-weight: 600; color: var(--muted); background: var(--panel-2); }
+tr:last-child td { border-bottom: 0; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+td .note { display: block; color: var(--faint); font-size: 12px; margin-top: 2px; }
+.status { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.status::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; background: currentColor; vertical-align: 1px; }
+.status.exact { color: var(--exact); } .status.approx { color: var(--approx); } .status.lost { color: var(--lost); }
+tr.lost td:not(:last-child) { color: var(--muted); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
+.card h3 { font-size: 12px; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
+.card svg { width: 100%; height: auto; display: block; }
+.card p { color: var(--faint); font-size: 12px; margin: 10px 0 0; }
+.footnote { color: var(--faint); font-size: 12px; margin-top: 14px; max-width: 70ch; }
+.notice { border: 1px solid var(--line); border-left: 3px solid var(--approx); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; color: var(--muted); background: var(--panel); }
+
+/* bottom bar */
+.bar { display: flex; align-items: center; gap: 16px; padding: 12px 20px; border-top: 1px solid var(--line); background: var(--panel); }
+.sel { flex: 1; color: var(--muted); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sel b { color: var(--text); }
+.tpl { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12.5px; }
+.tpl input { width: 210px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); }
+.primary { border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 650; padding: 9px 18px; border-radius: 8px; white-space: nowrap; }
+.primary:disabled { opacity: .45; cursor: default; }
+.ghost { border: 1px solid var(--line); background: none; padding: 8px 14px; border-radius: 8px; }
+
+/* dialog + toast */
+dialog { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--text); padding: 24px; width: min(540px, calc(100vw - 32px)); }
+dialog::backdrop { background: #0008; }
+dialog h2 { margin: 0 0 6px; font-size: 19px; }
+dialog .path { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--panel-2); border-radius: 8px; padding: 9px 11px; word-break: break-all; margin: 12px 0; }
+dialog ol { padding-left: 20px; margin: 14px 0; } dialog li { margin: 6px 0; }
+dialog .muted { color: var(--muted); font-size: 13px; }
+dialog .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+.toast { position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 9px 16px; border-radius: 9px; font-weight: 550; opacity: 0; pointer-events: none; transition: opacity .2s; max-width: calc(100vw - 32px); }
+.toast.show { opacity: 1; }
+.toast.error { background: var(--danger); color: #fff; }
+
+@media (max-width: 900px) {
+  body { overflow: auto; grid-template-rows: auto auto auto; }
+  .top { flex-wrap: wrap; padding: 12px 16px; }
+  main { grid-template-columns: minmax(0, 1fr); }
+  .seg { width: 100%; } .seg button { flex: 1; }
+  .list { border-right: 0; border-bottom: 1px solid var(--line); max-height: 55vh; }
+  .detail { padding: 20px 16px 32px; }
+  .cols .card { flex: 1 1 100%; max-width: 320px; }
+  .bar { flex-wrap: wrap; padding: 12px 16px; position: sticky; bottom: 0; }
+  .tpl input { width: 100%; } .tpl { flex: 1 1 100%; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="mark" aria-hidden="true"></span>
+    <div>
+      <h1>LR Mask Presets</h1>
+      <p>Put any Lightroom preset on just the background, or just the subject or sky.</p>
+    </div>
+  </div>
+  <div class="seg" role="group" aria-label="Apply the look to" id="target">
+    <button data-target="background" aria-pressed="true">Background</button>
+    <button data-target="subject" aria-pressed="false">Subject</button>
+    <button data-target="sky" aria-pressed="false">Sky</button>
+  </div>
+</header>
+
+<main>
+  <aside class="list" aria-label="Presets">
+    <div class="list-head">
+      <input class="search" id="search" type="search" placeholder="Search presets and groups" autocomplete="off">
+      <div class="chips" id="sources"></div>
+      <div class="row-tools">
+        <label class="check"><input type="checkbox" id="hideConverted" checked> Hide presets this app made</label>
+        <button class="link" id="refresh">Refresh</button>
+      </div>
+    </div>
+    <div class="groups" id="groups"><div class="empty-list">Loading your presets…</div></div>
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept=".xmp,.zip" multiple hidden>
+      Drop .xmp files or a .zip pack here, or <u>choose files</u>
+    </label>
+  </aside>
+  <section class="detail" id="detail" aria-live="polite"></section>
+</main>
+
+<footer class="bar">
+  <div class="sel" id="selInfo">Select presets on the left</div>
+  <label class="tpl">Lightroom group <input id="groupTpl" spellcheck="false" title="{target} and {group} are filled in for each preset"></label>
+  <button class="primary" id="convert" disabled>Create presets</button>
+</footer>
+
+<dialog id="done"></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const TOKEN = "__TOKEN__";
+const TARGETS = { background: "Background", subject: "Subject", sky: "Sky" };
+const OPTION_INFO = [
+  ["parametric", "Parametric → points", "Trace parametric curve sliders as a point curve (approximate)"],
+  ["grayscale", "B&W → desaturate", "Black & white presets give a fully desaturated mask"],
+  ["vibrance", "Vibrance → Saturation", "Masks have no Vibrance; add it to Saturation at half strength"],
+];
+const state = {
+  presets: [], sources: [], target: "background", source: "all", search: "", hideConverted: true,
+  options: { parametric: true, grayscale: true, vibrance: false },
+  selected: new Set(), focus: null, open: new Set(), outDir: "", groupTemplate: "{target} · {group}",
+};
+const $ = (s) => document.querySelector(s);
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+
+function el(tag, props = {}, ...kids) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(props)) {
+    if (value == null || value === false) continue;
+    if (key === "class") node.className = value;
+    else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
+    else if (typeof value !== "string" && key in node) node[key] = value;
+    else node.setAttribute(key, value === true ? "" : value);
+  }
+  for (const kid of kids.flat()) if (kid != null && kid !== false) node.append(kid.nodeType ? kid : String(kid));
+  return node;
+}
+
+async function api(path, init = {}) {
+  const res = await fetch(path, { ...init, headers: { "X-Token": TOKEN, ...(init.headers || {}) } });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || `${res.status} ${res.statusText}`);
+  return body;
+}
+
+function optionQuery() {
+  return Object.entries(state.options).map(([k, v]) => `${k}=${v ? 1 : 0}`).join("&");
+}
+
+function toast(message, isError = false) {
+  const t = $("#toast");
+  t.textContent = message;
+  t.className = "toast show" + (isError ? " error" : "");
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => (t.className = "toast"), isError ? 6000 : 2600);
+}
+
+/* ---------- data ---------- */
+async function load(refresh = false) {
+  try {
+    const data = await api(`/api/presets?${optionQuery()}${refresh ? "&refresh=1" : ""}`);
+    state.presets = data.presets;
+    state.sources = data.sources;
+    state.outDir = data.outDir;
+    if (!$("#groupTpl").value) $("#groupTpl").value = data.groupTemplate;
+    const known = new Set(state.presets.map((p) => p.id));
+    for (const id of [...state.selected]) if (!known.has(id)) state.selected.delete(id);
+    renderSources();
+    renderList();
+    renderSelection();
+    if (refresh) toast(`Found ${state.presets.length} presets`);
+  } catch (err) {
+    $("#groups").replaceChildren(el("div", { class: "empty-list" }, `Couldn't load presets: ${err.message}`));
+  }
+}
+
+function visible() {
+  const q = state.search.trim().toLowerCase();
+  return state.presets.filter((p) =>
+    (state.source === "all" || p.source === state.source) &&
+    !(state.hideConverted && p.converted) &&
+    (!q || p.name.toLowerCase().includes(q) || p.group.toLowerCase().includes(q)));
+}
+
+function grouped(list) {
+  const order = state.sources.map((s) => s.key);
+  const groups = new Map();
+  for (const p of list) {
+    const key = `${p.source}\u0000${p.group}`;
+    if (!groups.has(key)) groups.set(key, { key, source: p.source, name: p.group || "No group", items: [] });
+    groups.get(key).items.push(p);
+  }
+  const out = [...groups.values()];
+  out.sort((a, b) => order.indexOf(a.source) - order.indexOf(b.source) || collator.compare(a.name, b.name));
+  for (const g of out) g.items.sort((a, b) => collator.compare(a.name, b.name));
+  return out;
+}
+
+/* ---------- list ---------- */
+function renderSources() {
+  const total = state.presets.length;
+  const chips = [{ key: "all", label: "All", count: total }, ...state.sources];
+  if (!chips.some((c) => c.key === state.source)) state.source = "all";
+  $("#sources").replaceChildren(...chips.map((c) =>
+    el("button", { class: "chip", "aria-pressed": String(state.source === c.key),
+      onclick: () => { state.source = c.key; renderSources(); renderList(); } },
+      c.label, el("small", {}, c.count))));
+}
+
+function renderList() {
+  const list = visible();
+  const box = $("#groups");
+  if (!list.length) {
+    box.replaceChildren(el("div", { class: "empty-list" },
+      state.presets.length ? "No presets match." : "No presets found yet. Drop some .xmp files below."));
+    return;
+  }
+  const searching = state.search.trim() !== "";
+  const labels = Object.fromEntries(state.sources.map((s) => [s.key, s.label]));
+  const frag = document.createDocumentFragment();
+  for (const g of grouped(list)) {
+    const open = searching || state.open.has(g.key);
+    const picked = g.items.filter((p) => state.selected.has(p.id)).length;
+    const toggleOpen = () => { state.open.has(g.key) ? state.open.delete(g.key) : state.open.add(g.key); renderList(); };
+    frag.append(el("div", { class: "group-head" },
+      el("button", { class: "chev", "aria-expanded": String(open), "aria-label": open ? "Collapse group" : "Expand group", onclick: toggleOpen }, "›"),
+      el("input", { type: "checkbox", "aria-label": `Select all in ${g.name}`,
+        checked: picked === g.items.length, indeterminate: picked > 0 && picked < g.items.length,
+        onchange: (e) => { for (const p of g.items) e.target.checked ? state.selected.add(p.id) : state.selected.delete(p.id); renderList(); renderSelection(); } }),
+      el("span", { class: "group-name", onclick: toggleOpen }, g.name, state.source === "all" ? el("small", {}, labels[g.source] || g.source) : null),
+      el("span", { class: "count" }, g.items.length)));
+    if (!open) continue;
+    for (const p of g.items) {
+      const pct = Math.round(p.coverage * 100);
+      frag.append(el("div", { class: "item", "aria-current": String(state.focus === p.id), onclick: (e) => { if (e.target.type !== "checkbox") focusPreset(p.id); } },
+        el("input", { type: "checkbox", checked: state.selected.has(p.id), "aria-label": `Select ${p.name}`,
+          onchange: (e) => { e.target.checked ? state.selected.add(p.id) : state.selected.delete(p.id); renderList(); renderSelection(); } }),
+        el("span", { class: "name", title: p.name }, p.name),
+        p.converted ? el("span", { class: "tag" }, "made here") : null,
+        el("span", { class: "pill " + (pct >= 70 ? "hi" : pct >= 40 ? "mid" : ""), title: "Share of this preset's look settings that carry into a mask" },
+          p.empty ? "–" : `${pct}%`)));
+    }
+  }
+  const scroll = box.scrollTop;
+  box.replaceChildren(frag);
+  box.scrollTop = scroll;
+}
+
+function renderSelection() {
+  const n = state.selected.size;
+  const label = TARGETS[state.target];
+  $("#selInfo").replaceChildren(...(n
+    ? [el("b", {}, `${n} preset${n > 1 ? "s" : ""}`), " selected"]
+    : state.focus ? ["Nothing ticked, so the preset you're viewing will be used"] : ["Tick presets on the left, or a whole group"]));
+  const btn = $("#convert");
+  btn.disabled = !n && !state.focus;
+  btn.textContent = `Create ${n > 1 ? n + " " : ""}${label} preset${n > 1 ? "s" : ""}`;
+}
+
+/* ---------- detail ---------- */
+function welcome() {
+  $("#detail").replaceChildren(el("div", { class: "welcome" },
+    el("h2", {}, "Apply a preset to just part of the photo"),
+    el("p", {}, "Pick any preset and this app rebuilds its look inside a Lightroom AI mask. Lightroom then finds the background (or subject or sky) on every photo you apply it to."),
+    el("ol", { class: "steps" },
+      el("li", {}, el("div", {}, el("b", {}, "Pick presets"), el("span", {}, "Click one to see what carries over. Tick several, or a whole group, to batch them."))),
+      el("li", {}, el("div", {}, el("b", {}, "Create"), el("span", {}, "New presets are saved as a .zip in the output folder."))),
+      el("li", {}, el("div", {}, el("b", {}, "Import once in Lightroom"), el("span", {}, "File › Import Profiles & Presets…, then pick the .zip. They sync to your other devices."))))));
+}
+
+let previewSeq = 0;
+async function focusPreset(id) {
+  state.focus = id;
+  history.replaceState(null, "", `#preset=${encodeURIComponent(id)}`);
+  renderList();
+  renderSelection();
+  const seq = ++previewSeq;
+  try {
+    const q = `id=${encodeURIComponent(id)}&target=${state.target}&${optionQuery()}&groupTemplate=${encodeURIComponent($("#groupTpl").value)}`;
+    const pv = await api(`/api/preview?${q}`);
+    if (seq === previewSeq) renderDetail(pv);
+  } catch (err) {
+    if (seq === previewSeq) $("#detail").replaceChildren(el("div", { class: "notice" }, err.message));
+  }
+}
+
+function renderDetail(pv) {
+  const total = pv.rows.length || 1;
+  const labels = Object.fromEntries(state.sources.map((s) => [s.key, s.label]));
+  const carried = pv.counts.exact + pv.counts.approx;
+  const target = TARGETS[state.target];
+  const kids = [
+    el("div", { class: "eyebrow" }, el("span", { class: "badge" }, labels[pv.source] || pv.source), pv.group || "No group"),
+    el("h2", {}, pv.name),
+  ];
+  if (pv.converted) kids.push(el("div", { class: "notice" }, "This preset was made by this app. Converting it again would put a mask inside a mask; pick the original instead."));
+  kids.push(el("div", { class: "summary" },
+    el("div", { class: "summary-top" },
+      el("strong", {}, pv.rows.length ? `${carried} of ${pv.rows.length} settings carry into the ${target.toLowerCase()} mask` : "This preset has no look settings"),
+      el("div", { class: "legend" },
+        el("span", {}, el("i", { style: "background:var(--exact)" }), `${pv.counts.exact} exact`),
+        el("span", {}, el("i", { style: "background:var(--approx)" }), `${pv.counts.approx} approximate`),
+        el("span", {}, el("i", { style: "background:var(--lost)" }), `${pv.counts.lost} not possible`))),
+    el("div", { class: "meter", role: "img", "aria-label": `${carried} of ${pv.rows.length} carry over` },
+      el("div", { style: `width:${pv.counts.exact / total * 100}%;background:var(--exact)` }),
+      el("div", { style: `width:${pv.counts.approx / total * 100}%;background:var(--approx)` }),
+      el("div", { style: `width:${pv.counts.lost / total * 100}%;background:var(--lost)` })),
+    el("div", { class: "out-group" }, "Will appear in Lightroom under ", el("b", {}, `Yours › ${pv.outputGroup}`), ` as “${pv.name}”`)));
+
+  kids.push(el("div", { class: "options" },
+    ...OPTION_INFO.map(([key, label, hint]) => el("label", { title: hint },
+      el("input", { type: "checkbox", checked: state.options[key], onchange: (e) => { state.options[key] = e.target.checked; load(); focusPreset(pv.id); } }), label)),
+    el("div", { class: "hint" }, "Options apply to every preset you create.")));
+
+  const table = el("table", {},
+    el("thead", {}, el("tr", {}, el("th", {}, "Setting"), el("th", {}, "In the preset"), el("th", {}, `In the ${target.toLowerCase()} mask`), el("th", {}, ""))),
+    el("tbody", {}, ...(pv.rows.length ? pv.rows : [{ label: "Nothing to convert", before: "", after: "", status: "lost", note: "" }]).map((r) =>
+      el("tr", { class: r.status },
+        el("td", {}, r.label, r.note ? el("span", { class: "note" }, r.note) : null),
+        el("td", { class: "num" }, r.before),
+        el("td", { class: "num" }, r.after || "–"),
+        el("td", {}, el("span", { class: `status ${r.status}` }, { exact: "Exact", approx: "Approx.", lost: "Not possible" }[r.status]))))));
+  const side = Object.keys(pv.curves).length ? curveCard(pv.curves) : null;
+  kids.push(el("div", { class: "cols" }, el("div", { class: "table-wrap" }, table), side));
+  kids.push(el("p", { class: "footnote" }, "Detail, lens, crop and geometry settings aren't part of a look, so they're left alone. ",
+    "Anything marked “Not possible” has no mask equivalent in Lightroom; for those looks, the Photoshop layer-mask method is the exact route."));
+  $("#detail").replaceChildren(...kids);
+}
+
+function curveCard(curves) {
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", "0 0 256 256");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", "Tone curves inside the mask");
+  const add = (tag, attrs) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); svg.append(n); };
+  add("rect", { x: 0, y: 0, width: 256, height: 256, fill: "var(--panel-2)", rx: 6 });
+  for (const v of [64, 128, 192]) {
+    add("line", { x1: v, y1: 0, x2: v, y2: 256, stroke: "var(--line)", "stroke-width": 1 });
+    add("line", { x1: 0, y1: v, x2: 256, y2: v, stroke: "var(--line)", "stroke-width": 1 });
+  }
+  add("line", { x1: 0, y1: 256, x2: 256, y2: 0, stroke: "var(--faint)", "stroke-dasharray": "4 4", "stroke-width": 1 });
+  const colors = { RedCurve: "#ef5b5b", GreenCurve: "#3fbf6f", BlueCurve: "#4c8dff", MainCurve: "var(--text)" };
+  for (const key of ["RedCurve", "GreenCurve", "BlueCurve", "MainCurve"]) {
+    if (!curves[key]) continue;
+    const d = curves[key].map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${(255 - y).toFixed(1)}`).join(" ");
+    add("path", { d, fill: "none", stroke: colors[key], "stroke-width": key === "MainCurve" ? 2.4 : 1.8, "stroke-linejoin": "round" });
+  }
+  return el("div", { class: "card" }, el("h3", {}, "Curves inside the mask"), svg,
+    el("p", {}, "Dashed line = no change. Lightroom draws these as smooth curves through the same points."));
+}
+
+/* ---------- actions ---------- */
+async function convertSelected() {
+  const ids = state.selected.size ? [...state.selected] : state.focus ? [state.focus] : [];
+  if (!ids.length) return;
+  const btn = $("#convert");
+  btn.disabled = true;
+  btn.textContent = "Creating…";
+  try {
+    const res = await api("/api/convert", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids, target: state.target, options: state.options, groupTemplate: $("#groupTpl").value }),
+    });
+    showDone(res);
+  } catch (err) {
+    toast(err.message, true);
+  } finally {
+    renderSelection();
+  }
+}
+
+function showDone(res) {
+  const dlg = $("#done");
+  const groups = res.groups.length === 1 ? `“${res.groups[0]}”` : `${res.groups.length} groups starting “${res.groups[0]}”`;
+  dlg.replaceChildren(
+    el("h2", {}, `Created ${res.count} ${res.target} preset${res.count > 1 ? "s" : ""}`),
+    el("div", { class: "muted" }, "Saved as one file you can import:"),
+    el("div", { class: "path" }, res.zip),
+    el("b", {}, "Add them to Lightroom"),
+    el("ol", {},
+      el("li", {}, "In Lightroom, choose ", el("b", {}, "File › Import Profiles & Presets…")),
+      el("li", {}, "Pick the .zip above (", el("b", {}, "Show in Finder"), " opens its folder)."),
+      el("li", {}, "In Edit › Presets › Yours, open ", el("b", {}, groups), " and click one. Lightroom finds the ", res.target.toLowerCase(), " on each photo by itself.")),
+    el("div", { class: "muted" }, "They sync to Lightroom on your phone and the web too. Creating the same preset again replaces it instead of making a duplicate."),
+    res.skipped.length ? el("div", { class: "muted", style: "margin-top:10px" }, `Skipped ${res.skipped.length}: `,
+      res.skipped.slice(0, 4).map((s) => `${s.name} (${s.reason})`).join("; "), res.skipped.length > 4 ? "…" : "") : null,
+    el("div", { class: "actions" },
+      el("button", { class: "ghost", onclick: () => dlg.close() }, "Done"),
+      el("button", { class: "primary", onclick: () => reveal(res.zip) }, "Show in Finder")));
+  dlg.showModal();
+}
+
+async function reveal(path) {
+  try { await api("/api/reveal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path }) }); }
+  catch (err) { toast(err.message, true); }
+}
+
+async function upload(files) {
+  const wanted = [...files].filter((f) => /\.(xmp|zip)$/i.test(f.name));
+  if (!wanted.length) return toast("Drop .xmp preset files or a .zip of them", true);
+  let added = [], errors = [];
+  for (const file of wanted) {
+    try {
+      const res = await api("/api/upload", { method: "POST", headers: { "X-Filename": encodeURIComponent(file.name) }, body: file });
+      added = added.concat(res.added);
+      errors = errors.concat(res.errors);
+    } catch (err) { errors.push(`${file.name}: ${err.message}`); }
+  }
+  await load();
+  if (added.length) {
+    state.source = "uploaded";
+    state.search = "";
+    $("#search").value = "";
+    for (const id of added) state.selected.add(id);
+    renderSources(); renderList(); renderSelection();
+    focusPreset(added[0]);
+  }
+  if (errors.length) toast(`${added.length} added, ${errors.length} skipped: ${errors[0]}`, true);
+  else toast(`Added ${added.length} preset${added.length === 1 ? "" : "s"}`);
+}
+
+/* ---------- wiring ---------- */
+$("#search").addEventListener("input", (e) => { state.search = e.target.value; renderList(); });
+$("#hideConverted").addEventListener("change", (e) => { state.hideConverted = e.target.checked; renderList(); });
+$("#refresh").addEventListener("click", () => load(true));
+$("#convert").addEventListener("click", convertSelected);
+$("#groupTpl").addEventListener("change", () => state.focus && focusPreset(state.focus));
+$("#target").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-target]");
+  if (!btn) return;
+  state.target = btn.dataset.target;
+  for (const b of $("#target").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b === btn));
+  renderSelection();
+  if (state.focus) focusPreset(state.focus);
+});
+$("#file").addEventListener("change", (e) => { upload(e.target.files); e.target.value = ""; });
+let dragDepth = 0;
+window.addEventListener("dragenter", (e) => { e.preventDefault(); dragDepth++; document.body.classList.add("dragging"); });
+window.addEventListener("dragleave", () => { if (--dragDepth <= 0) { dragDepth = 0; document.body.classList.remove("dragging"); } });
+window.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("drop", (e) => { e.preventDefault(); dragDepth = 0; document.body.classList.remove("dragging"); upload(e.dataTransfer.files); });
+
+welcome();
+renderSelection();
+load().then(() => {
+  const id = new URLSearchParams(location.hash.slice(1)).get("preset");
+  const preset = id && state.presets.find((p) => p.id === id);
+  if (!preset) return;
+  state.open.add(`${preset.source}\u0000${preset.group}`);
+  focusPreset(id);
+});
+</script>
+</body>
+</html>

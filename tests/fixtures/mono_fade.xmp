@@ -1,0 +1,28 @@
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="test fixture">
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about=""
+    xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/">
+   <crs:PresetType>Normal</crs:PresetType>
+   <crs:UUID>22222222222222222222222222222222</crs:UUID>
+   <crs:Exposure2012>+4.60</crs:Exposure2012>
+   <crs:ConvertToGrayscale>True</crs:ConvertToGrayscale>
+   <crs:GrayMixerRed>-20</crs:GrayMixerRed>
+   <crs:IncrementalTemperature>+15</crs:IncrementalTemperature>
+   <crs:IncrementalTint>-5</crs:IncrementalTint>
+   <crs:ParametricShadows>+30</crs:ParametricShadows>
+   <crs:ParametricHighlights>-25</crs:ParametricHighlights>
+   <crs:Name>
+    <rdf:Alt>
+     <rdf:li xml:lang="x-default">Mono Fade</rdf:li>
+    </rdf:Alt>
+   </crs:Name>
+   <crs:MaskGroupBasedCorrections>
+    <rdf:Seq>
+     <rdf:li>
+      <rdf:Description crs:What="Correction" crs:LocalExposure2012="0.1"/>
+     </rdf:li>
+    </rdf:Seq>
+   </crs:MaskGroupBasedCorrections>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>
